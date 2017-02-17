@@ -1,0 +1,43 @@
+---
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rmcqmcint Monte-Carlo and Quasi Monte-Carlo Integration}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8](inputenc)
+---
+
+Monte-Carlo and Quasi Monte-Carlo Integration
+---------------------------------------------
+
+Execute Monte-Carlo or Quasi Monte-Carlo Integration for given integrand
+function.
+
+There are two pre-defined Low discrepancy point sets,
+Niederreiter-Xing point set and Sobol point set.
+Both of them are selected to have low WAFOM.
+
+Integrand function should recieve numeric vector and
+shoud return numeic value.
+Points passed to integrand are in the range [0, 1)^s.
+Returned value of integration is mean of returned value of integrand,
+not summation.
+
+example1:
+
+Simply calculate volume of n-sphere by Quasi Monte-Carlo Integration.
+
+```{r}
+        library(rmcqmcint)
+        unit.nsphere <- function(point) {
+           if (sqrt(sum(point^2)) <= 1.0) {
+               r <- 1.0
+            } else {
+               r <- 0.0
+            }
+            return(r)
+        }
+        rs <- qmcint(integrand=unit.nsphere, N=1000, s=4)
+        rs$mean
+        rs$absError
+        pi^2 / 2.0 / 16.0 # to compare true value.
+```
