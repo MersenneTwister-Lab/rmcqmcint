@@ -73,25 +73,49 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>Monte-Carlo and Quasi Monte-Carlo Integration</h2>
 <p>Execute Monte-Carlo or Quasi Monte-Carlo Integration for given integrand function.</p>
 <p>There are two pre-defined Low discrepancy point sets, Niederreiter-Xing point set and Sobol point set. Both of them are selected to have low WAFOM.</p>
-<p>Integrand function should recieve numeric vector and shoud return numeic value. Points passed to integrand are in the range [0, 1)^s. Returned value of integration is mean of returned value of integrand, not summation.</p>
-<p>example1:</p>
-<p>Simply calculate volume of n-sphere by Quasi Monte-Carlo Integration.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">        <span class="kw">library</span>(rmcqmcint)
-        unit.nsphere &lt;-<span class="st"> </span>function(point) {
-           if (<span class="kw">sqrt</span>(<span class="kw">sum</span>(point^<span class="dv">2</span>)) &lt;=<span class="st"> </span><span class="fl">1.0</span>) {
-               r &lt;-<span class="st"> </span><span class="fl">1.0</span>
-            } else {
-               r &lt;-<span class="st"> </span><span class="fl">0.0</span>
-            }
-            <span class="kw">return</span>(r)
-        }
-        rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">4</span>)
-        rs$mean</code></pre></div>
+<p>Integrand function should recieve numeric vector and shoud return numeic value. Points passed to integrand are in the range (0, 1)^s. Returned value of integration is mean of returned value of integrand, not summation. To get summation, multiply by 2^m.</p>
+<p>First, define an example integrand function; calculate n-sphere (0,1)^n.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rmcqmcint)
+unit.nsphere &lt;-<span class="st"> </span>function(point) {
+    if (<span class="kw">sqrt</span>(<span class="kw">sum</span>(point^<span class="dv">2</span>)) &lt;=<span class="st"> </span><span class="fl">1.0</span>) {
+        r &lt;-<span class="st"> </span><span class="fl">1.0</span>
+    } else {
+        r &lt;-<span class="st"> </span><span class="fl">0.0</span>
+    }
+    <span class="kw">return</span>(r)
+}</code></pre></div>
+<p>example 1: Calculate 4d-sphare by qmc, with default digital net.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">4</span>)
+rs$mean</code></pre></div>
 <pre><code>## [1] 0.3089766</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">        rs$absError</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
 <pre><code>## [1] 0.002048086</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">        pi^<span class="dv">2</span> /<span class="st"> </span><span class="fl">2.0</span> /<span class="st"> </span><span class="fl">16.0</span> <span class="co"># to compare true value.</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span> /<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">16</span> <span class="co"># to compare true value.</span></code></pre></div>
 <pre><code>## [1] 0.3084251</code></pre>
+<p>example 2: Calculate 5d-sphare by qmc, with sobol sequence digital net.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">5</span>, <span class="dt">digitalNetID =</span> <span class="dv">2</span>)
+rs$mean</code></pre></div>
+<pre><code>## [1] 0.1642695</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
+<pre><code>## [1] 0.0005274451</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">8</span> /<span class="st"> </span><span class="dv">15</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">32</span> <span class="co"># to compare true value.</span></code></pre></div>
+<pre><code>## [1] 0.1644934</code></pre>
+<p>example 3: Calculate 4d-sphare by mc.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">4</span>)
+rs$mean</code></pre></div>
+<pre><code>## [1] 0.3089766</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
+<pre><code>## [1] 0.002048086</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span> /<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">16</span> <span class="co"># to compare true value.</span></code></pre></div>
+<pre><code>## [1] 0.3084251</code></pre>
+<p>example 4: Calculate 5d-sphare by mc.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">5</span>)
+rs$mean</code></pre></div>
+<pre><code>## [1] 0.1639482</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
+<pre><code>## [1] 0.0006713039</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">8</span> /<span class="st"> </span><span class="dv">15</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">32</span> <span class="co"># to compare true value.</span></code></pre></div>
+<pre><code>## [1] 0.1644934</code></pre>
 </div>
 
 
