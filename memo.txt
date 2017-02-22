@@ -1,0 +1,3 @@
+git branch gh-pages
+git checkout gh-pages
+git push origin gh-pages
