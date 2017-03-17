@@ -92,7 +92,7 @@ rs$mean</code></pre></div>
 <pre><code>## [1] 0.002048086</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span> /<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">16</span> <span class="co"># to compare true value.</span></code></pre></div>
 <pre><code>## [1] 0.3084251</code></pre>
-<p>example 2: Calculate 5d-sphare by qmc, with sobol sequence digital net.</p>
+<p>example 2: Calculate 5d-sphare by qmc, with sobol sequence low WAFOM digital net.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">5</span>, <span class="dt">digitalNetID =</span> <span class="dv">2</span>)
 rs$mean</code></pre></div>
 <pre><code>## [1] 0.1642695</code></pre>
