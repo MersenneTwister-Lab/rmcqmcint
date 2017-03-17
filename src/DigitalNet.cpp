@@ -19,6 +19,7 @@
 #include "digital_data.h"
 #include "nxlw_data.h"
 #include "solw_data.h"
+#include "sobolpoint.h"
 #include "powtwo.h"
 #include "bit_operator.h"
 #include "DigitalNet.h"
@@ -337,6 +338,39 @@ namespace MCQMCIntegration {
         //uint64_t * datap = data[pos].data;
         for (uint32_t i = 0; i < s * m; i++) {
             base[i] = data[pos].data[i];
+        }
+        this->point_base = NULL;
+        this->point = NULL;
+        this->count = 0;
+#if defined(DEBUG)
+        cout << "end of constructor" << endl;
+#endif
+    }
+
+/**
+ * Constructor from reserved data
+ *
+ * constructor from pre-defined vector.
+ *
+ * @param baseVector pre-defined base vector.
+ * @param s s value
+ * @param m m value
+ * @exception runtime_error, when can't read data from is.
+ */
+    DigitalNet<uint64_t>::DigitalNet(const uint64_t baseVector[],
+                                     uint32_t s,
+                                     uint32_t m)
+    {
+#if defined(DEBUG)
+        cout << "start of constructor" << endl;
+#endif
+        this->s = s;
+        this->m = m;
+        wafom = 0;
+        tvalue = 0;
+        base = new uint64_t[s * m];
+        for (uint32_t i = 0; i < s * m; i++) {
+            base[i] = baseVector[i];
         }
         this->point_base = NULL;
         this->point = NULL;

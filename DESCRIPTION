@@ -1,9 +1,13 @@
 Package: rmcqmcint
 Type: Package
 Title: Monte-Carlo Quasi Monte-Carlo Integration
-Version: 1.0
-Date: 2017-02-16
-Authors@R: c(person("Makoto", "Matsumoto", role = "aut",
+Version: 1.1
+Date: 2017-03-17
+Authors@R: c(person("Frances", "Kuo", role = "aut",
+                    email="f.kuo@unsw.edu.au"),
+             person("Stephen", "Joe", role = "aut",
+                    email="stephenj@math.waikato.ac.nz"),
+             person("Makoto", "Matsumoto", role = "aut",
                     email="m-mat@math.sci.hiroshima-u.ac.jp"),
              person("Shinsuke", "Mori", role = c("aut","ctb"),
                     email="shinsukemori@hiroshima-u.ac.jp"),

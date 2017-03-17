@@ -5,6 +5,10 @@ rcppQMCIntegration <- function(integrand, N, id, s, m, probability) {
     .Call('rmcqmcint_rcppQMCIntegration', PACKAGE = 'rmcqmcint', integrand, N, id, s, m, probability)
 }
 
+rcppQMCIntegrationSobol <- function(integrand, N, sobolMatrix, s, m, probability) {
+    .Call('rmcqmcint_rcppQMCIntegrationSobol', PACKAGE = 'rmcqmcint', integrand, N, sobolMatrix, s, m, probability)
+}
+
 rcppMCIntegration <- function(integrand, N, s, m, probability) {
     .Call('rmcqmcint_rcppMCIntegration', PACKAGE = 'rmcqmcint', integrand, N, s, m, probability)
 }

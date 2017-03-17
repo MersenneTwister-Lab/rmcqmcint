@@ -2,6 +2,7 @@
 #include <random>
 #include <time.h>
 #include "DigitalNet.h"
+#include "sobolpoint.h"
 
 using namespace std;
 using namespace Rcpp;
@@ -61,10 +62,62 @@ List rcppQMCIntegration(Function integrand,
     DigitalNetID digitalNetId;
     if (id == 1) {
         digitalNetId = NXLW;
-    } else {
+    } else if (id == 2) {
         digitalNetId = SOLW;
+    } else { // id == 3
+        digitalNetId = SOBOL;
     }
     DigitalNet<uint64_t> digitalNet(digitalNetId, s, m);
+    digitalNet.pointInitialize();
+    OnlineVariance eachintval;
+    uint32_t cnt = 0;
+    int p = probToInt(probability);
+    NumericVector nv(s);
+    do {
+        checkUserInterrupt();
+        OnlineVariance intsum;
+        uint64_t max = 1;
+        max = max << m;
+        for (uint64_t j = 0; j < max; ++j) {
+            for (uint32_t k = 0; k < s; ++k) {
+                nv[k] = digitalNet.getPoint(k);
+            }
+            double d = as<double>(integrand(nv));
+#if defined(DEBUG)
+            //cout << "o:" << o << endl;
+            cout << "d:" << d << endl;
+#endif
+            intsum.addData(d);
+            digitalNet.nextPoint();
+        }
+        eachintval.addData(intsum.getMean());
+        cnt++;
+    } while ( cnt < N );
+    List data = List::create(Named("mean")=eachintval.getMean(),
+                             Named("absError")=eachintval.absErr(p));
+    return data;
+}
+
+// [[Rcpp::export(rng = false)]]
+List rcppQMCIntegrationSobol(Function integrand,
+                             uint32_t N,
+                             NumericMatrix sobolMatrix,
+                             int s,
+                             int m,
+                             double probability)
+{
+#if defined(DEBUG)
+    cout << "N:" << dec << N << endl;
+    cout << "s:" << dec << s << endl;
+    cout << "m:" << dec << m << endl;
+    cout << "probability:" << probability << endl;
+#endif
+    uint64_t base[s * m];
+    bool success = get_sobol_base(sobolMatrix, s, m, base);
+    if (!success) {
+            Rcpp::stop("can't find sobol point(s,m)");
+    }
+    DigitalNet<uint64_t> digitalNet(base, s, m);
     digitalNet.pointInitialize();
     OnlineVariance eachintval;
     uint32_t cnt = 0;

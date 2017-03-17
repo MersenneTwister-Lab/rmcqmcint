@@ -11,9 +11,10 @@ qmcint(integrand, N, s, digitalNetID = 1, m = 10, probability = 0.99)
 
 \item{N}{number of repeat.}
 
-\item{s}{dimention, s should be 4 <= s <= 10.}
+\item{s}{dimention, s should be 4 <= s}
 
-\item{digitalNetID}{1:Niederreiter-Xing, 2:Sobol.}
+\item{digitalNetID}{1:Niederreiter-Xing low WAFOM, 2:Sobol low wafom,
+3:Sobol large dimension.}
 
 \item{m}{F2-dimention of each element, m should be 10 <= m <= 18.}
 
@@ -29,8 +30,9 @@ Niederreiter-Xing and Sobol.
 \details{
 DigitalNetID:
 \itemize{
-\item{1:}{Niederreiter-Xing low WAFOM}
-\item{2:}{Sobol low WAFOM}
+\item{1:}{Niederreiter-Xing low WAFOM up to dimension 10}
+\item{2:}{Sobol low WAFOM up to dimentison 10}
+\item{3:}{Sobol Point Set up to dimension 21201}
 }
 
 integrand should receive numeric vector of length s and

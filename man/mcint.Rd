@@ -2,7 +2,7 @@
 % Please edit documentation in R/mcqmcint.R
 \name{mcint}
 \alias{mcint}
-\title{Monte-Carlo Integration with Low WAFOM Digital Net}
+\title{Monte-Carlo Integration}
 \usage{
 mcint(integrand, N, s, m = 10, probability = 0.99)
 }

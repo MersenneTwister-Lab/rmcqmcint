@@ -20,6 +20,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcppQMCIntegrationSobol
+List rcppQMCIntegrationSobol(Function integrand, uint32_t N, NumericMatrix sobolMatrix, int s, int m, double probability);
+RcppExport SEXP rmcqmcint_rcppQMCIntegrationSobol(SEXP integrandSEXP, SEXP NSEXP, SEXP sobolMatrixSEXP, SEXP sSEXP, SEXP mSEXP, SEXP probabilitySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Function >::type integrand(integrandSEXP);
+    Rcpp::traits::input_parameter< uint32_t >::type N(NSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sobolMatrix(sobolMatrixSEXP);
+    Rcpp::traits::input_parameter< int >::type s(sSEXP);
+    Rcpp::traits::input_parameter< int >::type m(mSEXP);
+    Rcpp::traits::input_parameter< double >::type probability(probabilitySEXP);
+    rcpp_result_gen = Rcpp::wrap(rcppQMCIntegrationSobol(integrand, N, sobolMatrix, s, m, probability));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcppMCIntegration
 List rcppMCIntegration(Function integrand, uint32_t N, int s, int m, double probability);
 RcppExport SEXP rmcqmcint_rcppMCIntegration(SEXP integrandSEXP, SEXP NSEXP, SEXP sSEXP, SEXP mSEXP, SEXP probabilitySEXP) {

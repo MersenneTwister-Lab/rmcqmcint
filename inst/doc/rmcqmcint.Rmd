@@ -46,7 +46,7 @@ rs$absError
 ```
 
 example 2:
-Calculate 5d-sphare by qmc, with sobol sequence digital net.
+Calculate 5d-sphare by qmc, with sobol sequence low WAFOM digital net.
 ```{r}
 rs <- qmcint(integrand=unit.nsphere, N=1000, s=5, digitalNetID = 2)
 rs$mean

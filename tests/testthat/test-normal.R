@@ -22,15 +22,15 @@ test_that("qmcint normal case 1", {
 	expect_equal(rs$mean, expected = v416, tolerance = rs$absError)
 })
 
-#test_that("qmcint normal case 2", {
-#        n <- 1000
-#        id <- 2
-#        s <- 5
-#        m <- 10
-#        p <- 0.99
-#	rs <- qmcint(unit.nsphere, n, s, id, m, p)
-#	expect_equal(rs$mean, expected = v532, tolerance = rs$absError)
-#})
+test_that("qmcint normal case 2", {
+        n <- 1000
+        id <- 3
+        s <- 5
+        m <- 10
+        p <- 0.99
+	rs <- qmcint(unit.nsphere, n, s, id, m, p)
+	expect_equal(rs$mean, expected = v532, tolerance = rs$absError)
+})
 
 test_that("mcint normal case 1", {
         n <- 100
