@@ -1,8 +1,8 @@
 Package: rmcqmcint
 Type: Package
 Title: Monte-Carlo Quasi Monte-Carlo Integration
-Version: 1.1
-Date: 2017-03-17
+Version: 1.2
+Date: 2017-03-21
 Authors@R: c(person("Frances", "Kuo", role = "aut",
                     email="f.kuo@unsw.edu.au"),
              person("Stephen", "Joe", role = "aut",

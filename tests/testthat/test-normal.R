@@ -10,6 +10,13 @@ unit.nsphere <- function(point) {
 	return(r)
 }
 
+make.oscillatory <- function(a) {
+	oscillatory <- function(point) {
+		return(cos(sum(a * point)))
+	}
+	return(oscillatory)
+}
+
 # 1/16 Volume of S^4
 v416 <- pi^2 / 2.0 / 16.0
 # 1/32 Volume of S^5
@@ -24,12 +31,24 @@ test_that("qmcint normal case 1", {
 
 test_that("qmcint normal case 2", {
         n <- 1000
-        id <- 3
+        id <- 2
         s <- 5
         m <- 10
         p <- 0.99
 	rs <- qmcint(unit.nsphere, n, s, id, m, p)
 	expect_equal(rs$mean, expected = v532, tolerance = rs$absError)
+})
+
+test_that("qmcint normal case 3", {
+        n <- 100
+        id <- 3
+        s <- 100
+        m <- 10
+        p <- 0.99
+        a <- rep(pi / s, length=s)
+        osc <- make.oscillatory(a)
+	rs <- qmcint(osc, N=n, s=s, digitalNetID=id, m=m, probability=p)
+	expect_equal(rs$mean, expected = 0, tolerance = rs$absError)
 })
 
 test_that("mcint normal case 1", {

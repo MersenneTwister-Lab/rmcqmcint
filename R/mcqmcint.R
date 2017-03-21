@@ -53,7 +53,7 @@ qmcint <- function(integrand,
         stop("m should be an integer 10 <= m <= 18")
     }
     if (digitalNetID == 3) {
-       return(rcppQMCIntegration(integrand, N, sobolbase, s, m, probability))
+       return(rcppQMCIntegrationSobol(integrand, N, sobolbase, s, m, probability))
     } else {
        return(rcppQMCIntegration(integrand, N, digitalNetID, s, m, probability))
     }
