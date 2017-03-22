@@ -39,7 +39,7 @@ unit.nsphere <- function(point) {
 example 1:
 Calculate 4d-sphare by qmc, with default digital net.
 ```{r}
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=4)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=4)
 rs$mean
 rs$absError
 1 / 2 * pi^2 / 16 # to compare true value.
@@ -48,7 +48,7 @@ rs$absError
 example 2:
 Calculate 5d-sphare by qmc, with sobol sequence low WAFOM digital net.
 ```{r}
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=5, digitalNetID = 2)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=5, digitalNetID = 2)
 rs$mean
 rs$absError
 8 / 15 * pi^2 / 32 # to compare true value.
@@ -57,7 +57,7 @@ rs$absError
 example 3:
 Calculate 4d-sphare by mc.
 ```{r}
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=4)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=4)
 rs$mean
 rs$absError
 1 / 2 * pi^2 / 16 # to compare true value.
@@ -66,7 +66,7 @@ rs$absError
 example 4:
 Calculate 5d-sphare by mc.
 ```{r}
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=5)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=5)
 rs$mean
 rs$absError
 8 / 15 * pi^2 / 32 # to compare true value.

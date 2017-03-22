@@ -10,25 +10,25 @@ unit.nsphere <- function(point) {
 }
 
 ## ------------------------------------------------------------------------
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=4)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=4)
 rs$mean
 rs$absError
 1 / 2 * pi^2 / 16 # to compare true value.
 
 ## ------------------------------------------------------------------------
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=5, digitalNetID = 2)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=5, digitalNetID = 2)
 rs$mean
 rs$absError
 8 / 15 * pi^2 / 32 # to compare true value.
 
 ## ------------------------------------------------------------------------
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=4)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=4)
 rs$mean
 rs$absError
 1 / 2 * pi^2 / 16 # to compare true value.
 
 ## ------------------------------------------------------------------------
-rs <- qmcint(integrand=unit.nsphere, N=1000, s=5)
+rs <- qmcint(integrand=unit.nsphere, N=100, s=5)
 rs$mean
 rs$absError
 8 / 15 * pi^2 / 32 # to compare true value.

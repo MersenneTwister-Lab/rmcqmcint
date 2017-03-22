@@ -2,22 +2,22 @@ Package: rmcqmcint
 Type: Package
 Title: Monte-Carlo Quasi Monte-Carlo Integration
 Version: 1.2
-Date: 2017-03-21
-Authors@R: c(person("Frances", "Kuo", role = "aut",
-                    email="f.kuo@unsw.edu.au"),
-             person("Stephen", "Joe", role = "aut",
-                    email="stephenj@math.waikato.ac.nz"),
+Date: 2017-03-22
+Authors@R: c(person("Frances", "Kuo", role = "aut"),
+             person("Stephen", "Joe", role = "aut"),
              person("Makoto", "Matsumoto", role = "aut",
                     email="m-mat@math.sci.hiroshima-u.ac.jp"),
              person("Shinsuke", "Mori", role = c("aut","ctb"),
                     email="shinsukemori@hiroshima-u.ac.jp"),
              person("Mutsuo", "Saito", role = "cre",
                     email="saito@manieth.com"))
-Author: Makoto Matsumoto [aut],
+Author: Frances Kuo [aut],
+        Stephen Joe [aut],
+        Makoto Matsumoto [aut],
         Shinsuke Mori [aut, ctb],
         Mutsuo Saito [cre]
 Maintainer: Mutsuo Saito <saito@manieth.com>
-Description: Monte-Carlo Quasi Monte-Carlo Integration with low WAFOM digital net.
+Description: Monte-Carlo Quasi Monte-Carlo Integration.
 License: GPL (>= 3)
 Imports: Rcpp (>= 0.12.9)
 LinkingTo: Rcpp

@@ -30,7 +30,7 @@ test_that("qmcint normal case 1", {
 })
 
 test_that("qmcint normal case 2", {
-        n <- 1000
+        n <- 100
         id <- 2
         s <- 5
         m <- 10
