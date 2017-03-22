@@ -85,37 +85,57 @@ unit.nsphere &lt;-<span class="st"> </span>function(point) {
     <span class="kw">return</span>(r)
 }</code></pre></div>
 <p>example 1: Calculate 4d-sphare by qmc, with default digital net.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">4</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">4</span>)
 rs$mean</code></pre></div>
-<pre><code>## [1] 0.3089766</code></pre>
+<pre><code>## [1] 0.3100977</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
-<pre><code>## [1] 0.002048086</code></pre>
+<pre><code>## [1] 0.006666557</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span> /<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">16</span> <span class="co"># to compare true value.</span></code></pre></div>
 <pre><code>## [1] 0.3084251</code></pre>
 <p>example 2: Calculate 5d-sphare by qmc, with sobol sequence low WAFOM digital net.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">5</span>, <span class="dt">digitalNetID =</span> <span class="dv">2</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">5</span>, <span class="dt">digitalNetID =</span> <span class="dv">2</span>)
 rs$mean</code></pre></div>
-<pre><code>## [1] 0.1642695</code></pre>
+<pre><code>## [1] 0.164375</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
-<pre><code>## [1] 0.0005274451</code></pre>
+<pre><code>## [1] 0.001514922</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">8</span> /<span class="st"> </span><span class="dv">15</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">32</span> <span class="co"># to compare true value.</span></code></pre></div>
 <pre><code>## [1] 0.1644934</code></pre>
 <p>example 3: Calculate 4d-sphare by mc.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">4</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">4</span>)
 rs$mean</code></pre></div>
-<pre><code>## [1] 0.3089766</code></pre>
+<pre><code>## [1] 0.3100977</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
-<pre><code>## [1] 0.002048086</code></pre>
+<pre><code>## [1] 0.006666557</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">1</span> /<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">16</span> <span class="co"># to compare true value.</span></code></pre></div>
 <pre><code>## [1] 0.3084251</code></pre>
 <p>example 4: Calculate 5d-sphare by mc.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">1000</span>, <span class="dt">s=</span><span class="dv">5</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">5</span>)
 rs$mean</code></pre></div>
-<pre><code>## [1] 0.1639482</code></pre>
+<pre><code>## [1] 0.1638379</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
-<pre><code>## [1] 0.0006713039</code></pre>
+<pre><code>## [1] 0.002203611</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="dv">8</span> /<span class="st"> </span><span class="dv">15</span> *<span class="st"> </span>pi^<span class="dv">2</span> /<span class="st"> </span><span class="dv">32</span> <span class="co"># to compare true value.</span></code></pre></div>
 <pre><code>## [1] 0.1644934</code></pre>
+<p>Define another example integrand function; Oscillatory function in Genz test functions.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">make.oscillatory &lt;-<span class="st"> </span>function(a) {
+    oscillatory &lt;-<span class="st"> </span>function(point) {
+        <span class="kw">return</span>(<span class="kw">cos</span>(<span class="kw">sum</span>(a *<span class="st"> </span>point)))
+    }
+    <span class="kw">return</span>(oscillatory)
+}</code></pre></div>
+<p>If sum(a) is pi, integration of this function in (0, 1)^s will become zero. ID=3 means to use Sobol sequence up to dimention 21201.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="dv">100</span>
+id &lt;-<span class="st"> </span><span class="dv">3</span>
+s &lt;-<span class="st"> </span><span class="dv">1000</span>
+m &lt;-<span class="st"> </span><span class="dv">10</span>
+p &lt;-<span class="st"> </span><span class="fl">0.99</span>
+a &lt;-<span class="st"> </span><span class="kw">rep</span>(pi /<span class="st"> </span>s, <span class="dt">length=</span>s)
+osc &lt;-<span class="st"> </span><span class="kw">make.oscillatory</span>(a)
+rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(osc, <span class="dt">N=</span>n, <span class="dt">s=</span>s, <span class="dt">digitalNetID=</span>id, <span class="dt">m=</span>m, <span class="dt">probability=</span>p)
+rs$mean</code></pre></div>
+<pre><code>## [1] 1.167836e-06</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs$absError</code></pre></div>
+<pre><code>## [1] 0.0002671781</code></pre>
 </div>
 
 
