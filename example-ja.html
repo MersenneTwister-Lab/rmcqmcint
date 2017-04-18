@@ -52,7 +52,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2 id="モンテカルロ及び準モンテカルロ法による数値積分">モンテカルロ及び準モンテカルロ法による数値積分</h2>
 <p>このパッケージはモンテカルロ法による数値積分関数<strong>mcint</strong>および準モンテカルロ法 による数値積分関数<strong>qmcint</strong>を提供する。</p>
 <p>準モンテカルロ法で使用できる三種類の超一様分布列があらかじめ定義されている。 それはWAFOM値の低い Niederreiter-Xing 点集合とSobol 点集合, および高次元のSobol点集合である。</p>
-<p>被積分関数は, ユーザーが定義する必要があるが, 数値のベクトルを引数として 受け取り, 数値を返す必要がある。 被積分関数に渡される点は (0, 1)^s の範囲の数になる。 数値積分の返す値は, 被積分関数の返す値の平均であり, 合計ではない。 合計を得るためには 2^m 倍する必要がある。</p>
+<p>被積分関数は, ユーザーが定義する必要があるが, 数値のベクトルを引数として 受け取り, 数値を返す必要がある。 被積分関数に渡される点は <span class="math inline">(0, 1)<sup><em>s</em></sup></span> の範囲の数になる。</p>
 <p>まず, 被積分関数の例を挙げる。これは原点を中心とする半径1の単位n次元超球の体積を求める関数である。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rmcqmcint)
 unit.nsphere &lt;-<span class="st"> </span><span class="cf">function</span>(point) {
@@ -110,7 +110,7 @@ rs<span class="op">$</span>absError
     }
     <span class="kw">return</span>(oscillatory)
 }</code></pre></div>
-<p>ベクトルaの合計がπなら, この関数の(0, 1)^s領域での積分値はゼロになるはずである。 以下で指定している ID=3 は21201次元まで指定できる Sobol 点集合を示している。</p>
+<p>ベクトルaの合計がπなら, この関数の<span class="math inline">(0, 1)<sup><em>s</em></sup></span>領域での積分値はゼロになるはずである。 以下で指定している ID=3 は21201次元まで指定できる Sobol 点集合を示している。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="dv">100</span>
 id &lt;-<span class="st"> </span><span class="dv">3</span>
 s &lt;-<span class="st"> </span><span class="dv">1000</span>
