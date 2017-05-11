@@ -284,6 +284,7 @@ namespace MCQMCIntegration {
 #endif
         this->s = s;
         this->m = m;
+        this->shift = new uint64_t[s];
         const dndata * data;
         if (id == NXLW) {
             data = nxlw;
@@ -366,6 +367,7 @@ namespace MCQMCIntegration {
 #endif
         this->s = s;
         this->m = m;
+        this->shift = new uint64_t[s];
         wafom = 0;
         tvalue = 0;
         base = new uint64_t[s * m];
@@ -385,6 +387,7 @@ namespace MCQMCIntegration {
 #if defined(DEBUG)
         cout << "DigitalNet DEBUG: before delete[] base" << endl;
 #endif
+        delete[] shift;
         delete[] base;
         if (point_base != NULL) {
 #if defined(DEBUG)
@@ -428,9 +431,9 @@ namespace MCQMCIntegration {
         if (point == NULL) {
             point = new double[s];
         }
-        shift = mt();
         for (uint32_t i = 0; i < s; ++i) {
             point_base[i] = getBase(0, i);
+            shift[i] = mt();
         }
         gray.clear();
         count++;
@@ -448,7 +451,7 @@ namespace MCQMCIntegration {
         for (uint32_t i = 0; i < s; ++i) {
             point_base[i] ^= getBase(bit, i);
             // shift して1を立てている
-            point[i] = static_cast<double>(point_base[i] ^ shift)
+            point[i] = static_cast<double>(point_base[i] ^ shift[i])
                 * powhalf(N) + powhalf(N + 1);
         }
         if (count == powtwo(m)) {
