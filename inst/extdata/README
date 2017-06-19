@@ -1,0 +1,6 @@
+More useful than using file.path would be to use system.file. Once
+your package is installed, you can grab your file like so:
+
+fpath <- system.file("extdata", "my_raw_data.csv", package="my_package")
+
+fpath will now have the absolute path on your HD to the file.

@@ -1,8 +1,8 @@
 Package: rmcqmcint
 Type: Package
 Title: Monte-Carlo Quasi Monte-Carlo Integration
-Version: 1.2.1
-Date: 2017-05-12
+Version: 1.3
+Date: 2017-06-12
 Authors@R: c(person("Frances", "Kuo", role = "aut"),
              person("Stephen", "Joe", role = "aut"),
              person("Makoto", "Matsumoto", role = "aut",
@@ -20,7 +20,7 @@ Maintainer: Mutsuo Saito <saito@manieth.com>
 Description: Monte-Carlo Quasi Monte-Carlo Integration.
 License: GPL (>= 3)
 Imports: Rcpp (>= 0.12.9)
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RSQLite
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1

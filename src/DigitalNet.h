@@ -1,6 +1,6 @@
 #pragma once
-#ifndef MCQMC_INTEGRATION_DIGITAL_NET_H
-#define MCQMC_INTEGRATION_DIGITAL_NET_H
+#ifndef DIGITAL_NET_H
+#define DIGITAL_NET_H
 /**
  * @file DigitalNet.h
  *
@@ -19,263 +19,386 @@
  * The GPL ver.3 is applied to this software, see
  * COPYING
  */
-
+#include "grayindex.h"
+#include "MersenneTwister64.h"
+#include <stdint.h>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <cerrno>
-#include <random>
+#include <cmath>
 
-namespace MCQMCIntegration {
-    /**
-     * ID of pre-defined Digital Net.
-     */
-    enum DigitalNetID {
-        SOBOL = 1,          //! Sobol Point Set up to dimension 21201.
-        NXLW = 3,           //! Niederreiter-Xing point set of Low WAFOM.
-        SOLW = 4            //! Sobol point set of Low WAFOM.
+namespace DigitalNetNS {
+
+    enum digital_net_id {
+        NX = 0,
+        SOBOL = 1,
+        OLDSO = 2,
+        NXLW = 3,
+        SOLW = 4,
+        RANDOM = -1
     };
 
-    /**
-     * Digital Net class for Quasi Mote-Carlo Method.
-     * This class is almost dummy.
-     *
-     * @tparam T uint32_t of uint64_t, currently uint64_t is specialized.
-     */
-    template<typename T>
-        class DigitalNet {
-    public:
-        static const char * getDataPath();
-        static uint32_t getParameterSize();
-        static const std::string getDigitalNetName(uint32_t index);
-        static const std::string getDigitalNetConstruction(uint32_t index);
-        static uint32_t getSMax();
-        static uint32_t getSMin();
-        static uint32_t getMMax();
-        static uint32_t getMMin();
-    private:
-        ~DigitalNet();
-        DigitalNet(int s, int m);
-        T dmy;
-    };
+    uint32_t getParameterSize();
+    const std::string getDigitalNetName(uint32_t index);
+    const std::string getDigitalNetConstruction(uint32_t index);
+    int readDigitalNetData(digital_net_id id, uint32_t s, uint32_t m,
+                           uint64_t base[],
+                           int * tvalue, double * wafom);
+    int readDigitalNetData(digital_net_id id, uint32_t s, uint32_t m,
+                           uint32_t base[],
+                           int * tvalue, double * wafom);
+    int readDigitalNetHeader(std::istream& is, int * n,
+                             uint32_t * s, uint32_t * m);
+    int readDigitalNetData(std::istream& is, int n,
+                           uint32_t s, uint32_t m,
+                           uint64_t base[],
+                           int * tvalue, double * wafom);
+    int readDigitalNetData(std::istream& is, int n,
+                           uint32_t s, uint32_t m,
+                           uint32_t base[],
+                           int * tvalue, double * wafom);
+    int getSMax(digital_net_id id);
+    int getSMin(digital_net_id id);
+    int getMMax(digital_net_id id, int s);
+    int getMMin(digital_net_id id, int s);
 
-    /**
-     * Digital Net class for Quasi Mote-Carlo Method.
-     *
-     * Explicit specialization for 64-bit unsigned integer.
-     */
-    template<>
-        class DigitalNet<uint64_t> {
+    template<typename U>
+    class DigitalNet {
     private:
         // First of all, forbid copy and assign.
-        DigitalNet(const DigitalNet<uint64_t>& that);
-        DigitalNet<uint64_t>& operator=(const DigitalNet<uint64_t>&);
-        class Gray {
-        public:
-            Gray();
-            void clear();
-            uint32_t next();
-            int index();
-        private:
-            uint32_t count;
-            uint32_t gray;
-            uint32_t pre;
-        };
+        DigitalNet(const DigitalNet<U>& that);
+        DigitalNet<U>& operator=(const DigitalNet<U>&);
 
     public:
         /**
-         * constructor from stream.
+         * Constructor from input stream
          *
-         * FORMAT:
-         * @li separators are white spaces or newlines.
-         * @li 1st element : 64 fixed.
-         * @li 2nd element : @b s, dimension of point set.
-         * @li 3rd element : @b m, F2 dimension of element of point set.
-         * @li 4th -       : @b s * @b m elements of 64-bit integers.
-         * @li last but one: WAFOM value, optional.
-         * @li last        : t-value, optional.
-         * @throw runtime_error when can't read from stream.
+         * File Format:
+         * separator: white space, blank char, tab char, cr, lf, etc.
+         * the first item: bit size, integer fixed to 64, currently.
+         * the second item: s, unsigned integer.
+         * the third item: m, unsigned integer.
+         * from fourth: s * m number of 64-bit unsigned integers.
+         * the last but one: wafom double precision number, optional.
+         * the last: t-value, integer, optional.
+         * @param is input stream, from where digital net data are read.
+         * @exception runtime_error, when can't read data from is.
          */
-        DigitalNet(std::istream& is);
+        DigitalNet(std::istream& is) {
+            //using namespace std;
+            int n;
+            id = -100;
+            int r = readDigitalNetHeader(is, &n, &s, &m);
+            if (r != 0) {
+                //throw std::runtime_error("data type mismatch!");
+                throw "data type mismatch!";
+            }
+            base = new U[s * m]();
+            r = readDigitalNetData(is, n, s, m, base,
+                                   &tvalue, &wafom);
+            if (r != 0) {
+                //throw std::runtime_error("data type mismatch!");
+                throw "data type mismatch!";
+            }
+            shift = NULL;
+            point_base = NULL;
+            point = NULL;
+            count = 0;
+            digitalShift = false;
+        }
 
-        /**
-         * constructor from pre-defined data.
-         *
-         * DigitalNetID:
-         * @li NXLW : Niederreiter-Xing low WAFOM up to dimension 10.
-         * @li SOBOL: Sobol Point Set up to dimension 21201.
-         * @li SOLW : Sobol low WAFOM up to dimension 10.
-         * @param[in] id ID of pre-defined digital net.
-         * @param[in] s dimension of point set, s should be 4 <= s
-         * @param[in] m F2 dimension of element of point set, m should be
-         * 10 <= m <= 18.
-         */
-        DigitalNet(DigitalNetID id, uint32_t s, uint32_t m);
+        DigitalNet(const digital_net_id& id, uint32_t s, uint32_t m) {
+            using namespace std;
+            this->s = s;
+            this->m = m;
+            this->id = static_cast<int>(id);
+            base = new U[s * m]();
+            int r = readDigitalNetData(id, s, m, base,
+                                       &tvalue, &wafom);
+            if (r != 0) {
+                //throw runtime_error("data type mismatch!");
+                throw "data type mismatch!";
+            }
+            shift = NULL;
+            point_base = NULL;
+            point = NULL;
+            count = 0;
+            digitalShift = false;
+        }
 
-        /**
-         * constructor from pre-defined vector.
-         *
-         * @param[in] baseVector pre-defined base vector.
-         * @param[in] s dimension of point set, s should be 4 <= s
-         * @param[in] m F2 dimension of element of point set, m should be
-         * 10 <= m <= 18.
-         */
-        DigitalNet(const uint64_t baseVector[], uint32_t s, uint32_t m);
+        ~DigitalNet() {
+            if (base != NULL) {
+                delete[] base;
+            }
+            if (shift != NULL) {
+                delete[] shift;
+            }
+            if (point_base != NULL) {
+                delete[] point_base;
+            }
+            if (point != NULL) {
+                delete[] point;
+            }
+        }
 
-        /**
-         * destructor.
-         */
-        ~DigitalNet();
-
-        /**
-         * get an element of base matrix of generating point set.
-         * @param[in] i row
-         * @param[in] j column
-         * @return an element of base matrix of generating point set.
-         */
-        uint64_t getBase(int i, int j) const {
+        U getBase(int i, int j) const {
             return base[i * s + j];
         }
 
-        /**
-         * get a component of a point vector.
-         * @param[in] i get i-th component.
-         * @return a component of a point vector.
-         */
+        // このあとpoint initialize せよ
+        void saveBase(U save[], size_t size) const {
+            for (size_t i = 0; (i < s * m) && (i < size); i++) {
+                save[i] = base[i];
+            }
+        }
+
+        void restoreBase(U save[], size_t size) const {
+            for (size_t i = 0; (i < s * m) && (i < size); i++) {
+                base[i] = save[i];
+            }
+        }
+
         double getPoint(int i) const {
             return point[i];
         }
 
-        /**
-         * get a point vector.
-         * @return a point vector.
-         */
+        void setDigitalShift(bool value) {
+            digitalShift = value;
+        }
+
         const double * getPoint() const {
             return point;
         }
 
-        /**
-         * get dimension of digital net.
-         * @return dimension of digital net.
-         */
+        const U * getPointBase() const {
+            return point_base;
+        }
+
         uint32_t getS() const {
             return s;
         }
-
-        /**
-         * get F2 dimension of element of digital net.
-         * @return F2 dimension of element of digital net.
-         */
         uint32_t getM() const {
             return m;
         }
+        const std::string getName() {
+            if (id >= 0) {
+                return getDigitalNetName(id);
+            } else {
+                return "no name";
+            }
+        }
 
-        /**
-         * show internal status.
-         * @param[in,out] os output stream
-         */
-        void showStatus(std::ostream& os);
+        // Random Linear Scramble
+        // Base を変えてしまう => いいのかも。
+        void scramble() {
+            const size_t N = sizeof(U) * 8;
+            U LowTriMat[N];
+            U tmp;
+            const U one = 1;
+            for (size_t i = 0; i < s; i++) {
+                // 正則な下三角行列を作る
+                for (size_t j = 0; j < N; j++) {
+                    U p2 = one << (N - j - 1);
+                    LowTriMat[j] = (mt() << (N - j - 1)) | p2;
+                }
+                for (size_t k = 0; k < m; k++) {
+                    tmp = UINT64_C(0);
+                    for (size_t j = 0; j < N; j++) {
+                        U bit = innerProduct(LowTriMat[j], getBase(k, i));
+                        tmp ^= bit << (N - j - 1);
+                    }
+                    setBase(k, i, tmp);
+                }
+            }
+        }
 
-        /**
-         * scramble base data
-         */
-        void scramble();
+        /** Hill Climb Linear Scramble.
+         *
+         *
+         指定されたi(0<=i<s)に対し, C_iのみにL_iをかける操作をする
+         ただし, L_iは下三角行列かつ正則で, 指定されたj, l(n>j>l>=0)に対し
+         第(j, l)成分(と対角成分)が1, その他が0の行列である.
+         もう一度同じL_iをC_iにかけることで元のC_iに戻る.
+         L_i(j, l)をC_iにかけると, C_iのj行にl行を足した(XOR)ものとなる.
 
-        /**
-         * (re-)initialize point.
+         * upos1 > upos2
+         * @param idx C_i
+         * @param upos1 j count from MSB 0 is MSB
+         * @param upos2 l count from MSB 0 is MSB
          */
-        void pointInitialize();
+        void hc_scramble(int idx, int upos1, int upos2) {
+            // getBit(a, b) : a の下から b 番目のbit
+            const U one = 1;
+            const int N = sizeof(U) * 8;
+            //int diff = upos2 - upos1;
+            int bpos1 = N - 1 - upos1;
+            U umask1 = one << bpos1;
+            int bpos2 = N - 1 - upos2;
+            U umask2 = one << bpos2;
+            for (size_t i = 0; i < m; i++) {
+                int index = getIndex(i, idx);
+                if (base[index] & umask2) {
+                    base[index] ^= umask1;
+                }
+            }
+        }
 
-        /**
-         * state transition to next point.
-         */
-        void nextPoint();
+        void pointInitialize() {
+#if defined(DEBUG)
+            using namespace std;
+            cout << "in pointInitialize" << endl;
+#endif
+            if (shift == NULL) {
+                shift = new U[s]();
+            }
+            if (point_base == NULL) {
+                point_base = new U[s]();
+            }
+            if (point == NULL) {
+                point = new double[s]();
+            }
+            for (uint32_t i = 0; i < s; ++i) {
+                point_base[i] = 0;
+            }
+            if (digitalShift) {
+                for (uint32_t i = 0; i < s; ++i) {
+                    shift[i] = mt();
+                }
+            } else {
+                for (uint32_t i = 0; i < s; ++i) {
+                    shift[i] = 0;
+                }
+            }
+            gray.clear();
+            count = 0;
+            count++;
+            //nextPoint();
+#if defined(DEBUG)
+            cout << "out pointInitialize" << endl;
+#endif
+        }
 
-        /**
-         * set seed for random number generator for scramble.
-         */
-        void setSeed(uint64_t seed);
-
-        /**
-         * get WAFOM value if exist.
-         * @return WAFOM value.
-         */
+        void nextPoint() {
+#if defined(DEBUG)
+            using namespace std;
+            cout << "in nextPoint" << endl;
+#endif
+            if (count == (UINT64_C(1) << m)) {
+                pointInitialize();
+                //return;
+            }
+            int get_max;
+            double factor;
+            double eps;
+            if (sizeof(U) * 8 == 64) {
+                get_max = 64 - 53;
+                factor = exp2(-53);
+                eps = exp2(-64);
+            } else {
+                get_max = 0;
+                factor = exp2(-32);
+                eps = exp2(-33);
+            }
+            int bit = gray.index();
+#if defined(DEBUG)
+            cout << "bit = " << bit << endl;
+            cout << "before boint_base:" << endl;
+            for (size_t i = 0; i < s; i++) {
+                cout << point_base[i] << " ";
+            }
+            cout << endl;
+#endif
+            for (uint32_t i = 0; i < s; ++i) {
+                point_base[i] ^= getBase(bit, i);
+                // shift して1を立てている
+                uint64_t tmp = (point_base[i] ^ shift[i]) >> get_max;
+                point[i] = static_cast<double>(tmp) * factor + eps;
+            }
+            if (count == (UINT64_C(1) << m)) {
+                count = 0;
+                gray.clear();
+            } else {
+                gray.next();
+                count++;
+            }
+#if defined(DEBUG)
+            cout << "after boint_base:" << endl;
+            for (size_t i = 0; i < s; i++) {
+                cout << point_base[i] << " ";
+            }
+            cout << endl;
+            cout << "out nextPoint" << endl;
+#endif
+        }
+        //void showStatus(std::ostream& os);
+        void setSeed(U seed) {
+            mt.seed(seed);
+        }
         double getWAFOM() {
             return wafom;
         }
 
-        /**
-         * get t-value if exist.
-         * @return t-value
-         */
         int64_t getTvalue() {
             return tvalue;
         }
-#if 0
-        /**
-         * get a file path for predefined data.
-         * @return a file path for predefined data.
-         */
-        static const char * getDataPath();
-
-        /**
-         * get number of predefined data kinds.
-         * @return number of predefined data kinds.
-         */
-        static uint32_t getParameterSize();
-
-        /**
-         * get a name of pre-defined digital net.
-         * @return a name of pre-defined digital net.
-         */
-        static const std::string getDigitalNetName(uint32_t index);
-
-        /**
-         * get explanation of pre-defined digital net.
-         * @return explanation of pre-defined digital net.
-         */
-        static const std::string getDigitalNetConstruction(uint32_t index);
-#endif
-        /**
-         * get maximum number of pre-defined digital net dimension @b s.
-         * @return maximum number of pre-defined digital net dimension @b s.
-         */
-        static uint32_t getSMax();
-
-        /**
-         * get minimum number of pre-defined digital net dimension @b s.
-         * @return minimum number of pre-defined digital net dimension @b s.
-         */
-        static uint32_t getSMin();
-
-        /**
-         * get maximum number of pre-defined digital net F2 dimension @b m.
-         * @return maximum number of pre-defined digital net F2 dimension @b m.
-         */
-        static uint32_t getMMax();
-
-        /**
-         * get minimum number of pre-defined digital net F2 dimension @b m.
-         * @return minimum number of pre-defined digital net F2 dimension @b m.
-         */
-        static uint32_t getMMin();
     private:
-        void setBase(int i, int j, uint64_t value) {
+        void setBase(int i, int j, U value) {
             base[i * s + j] = value;
         }
-        void scramble(int i, int j, int l);
+        int getIndex(int i, int j) const {
+            return i * s + j;
+        }
+        int id;
         uint32_t s;
         uint32_t m;
-        uint64_t *shift;
         uint64_t count;
         double wafom;
-        int64_t tvalue;
-        Gray gray;
-        std::mt19937_64 mt;
-        uint64_t * base;
-        uint64_t * point_base;
+        int tvalue;
+        bool digitalShift;
+        GrayIndex gray;
+        MersenneTwister64 mt;
+        U * base;
+        U * point_base;
+        U * shift;
         double * point;
     };
+
+
+    template<typename T>
+    void print(std::ostream& os, const DigitalNet<T>& dn,
+               bool verbose = true, char delim = '\n')
+    {
+        using namespace std;
+        int s = dn.getS();
+        int m = dn.getM();
+        os << dec;
+        if (verbose) {
+            os << "n = " << (sizeof(T) * 8) << endl;
+            os << "s = " << s << endl;
+            os << "m = " << m << endl;
+            for (int k = 0; k < m; k++) {
+                for (int i = 0; i < s; i++) {
+                    os << "base[" << dec << k << "][" << i << "]"
+                       << hex << dn.getBase(k, i) << endl;
+                }
+            }
+        } else {
+            os << (sizeof(T) * 8) << delim;
+            os << s << delim;
+            os << m << delim;
+            for (int k = 0; k < m; k++) {
+                for (int i = 0; i < s; i++) {
+                    os << dec << dn.getBase(k, i) << delim;
+                }
+                if (delim != ' ') {
+                    os << delim;
+                }
+            }
+        }
+    }
 }
-#endif // MCQMC_INTEGRATION_DIGITAL_NET_H
+
+#endif // DIGITAL_NET_HPP

@@ -22,7 +22,7 @@
  * and modified by authors.
  * You may use original Public Domain Software for your code.
  */
-//#include "config.h"
+#include "config.h"
 #include <inttypes.h>
 /**
  * Counts number of 1s.
@@ -33,12 +33,16 @@
  * @return number of 1s in \b x.
  */
 static inline int ones(uint32_t x) {
+#if HAVE___BUILTIN_POPCOUNTL
+    return __builtin_popcountl(x);
+#else
     x -= (x >> 1) & UINT32_C(0x55555555);
     x = ((x >> 2) & UINT32_C(0x33333333)) + (x & UINT32_C(0x33333333));
     x = ((x >> 4) + x) & UINT32_C(0x0f0f0f0f);
     x += (x >> 8);
     x += (x >> 16);
     return static_cast<int>(x & UINT32_C(0x3f));
+#endif
 }
 
 /**
@@ -50,6 +54,9 @@ static inline int ones(uint32_t x) {
  * @return number of 1s in \b x.
  */
 static inline int ones(uint64_t x) {
+#if HAVE___BUILTIN_POPCOUNTLL
+    return __builtin_popcountll(x);
+#else
     x -= (x >> 1) & UINT64_C(0x5555555555555555);
     x = ((x >> 2) & UINT64_C(0x3333333333333333))
         + (x & UINT64_C(0x3333333333333333));
@@ -58,6 +65,7 @@ static inline int ones(uint64_t x) {
     x += (x >> 16);
     x += (x >> 32);
     return static_cast<int>(x & UINT64_C(0x7f));
+#endif
 }
 
 
@@ -141,6 +149,16 @@ static inline uint64_t reverseBit(uint64_t x)
 static inline int getBit(uint64_t x, uint32_t pos)
 {
     return (x >> pos) & 1;
+}
+
+static inline int tailingZeroBit(uint32_t x)
+{
+    return(ones((x & -x) - 1));
+}
+
+static inline int tailingZeroBit(uint64_t x)
+{
+    return(ones((x & -x) - 1));
 }
 
 #endif // BIT_OPERATOR_H

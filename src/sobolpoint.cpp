@@ -61,24 +61,227 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <cstdio>
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
+#if defined(IN_RCPP)
+#include <Rcpp.h>
+#else
+#include <sqlite3.h>
+#endif
 #include "sobolpoint.h"
 
 //#define DEBUG 1
 using namespace std;
-using namespace Rcpp;
 //#define DEBUG_STEP(x) do { cerr << "debug step " << x << endl;} while(0)
 #define DEBUG_STEP(x)
 
 //static const int s_min = 2;
-//static const int max_data = 50;
+static const int max_data = 50;
 
-namespace MCQMCIntegration {
+#if defined(IN_RCPP)
+using namespace Rcpp;
+#endif
 
-    bool get_sobol_base(Rcpp::NumericMatrix sobolMatrix,
+namespace {
+    //int select_bind(sqlite3 *db, sqlite3_stmt** select_sql);
+#if defined(IN_RCPP)
+    bool read_data(Rcpp::DataFrame df, int count, uint32_t data[]);
+#else
+    bool read_data(sqlite3_stmt* select_sql, uint32_t data[]);
+#endif
+    bool read_data(istream& is, uint32_t data[]);
+}
+
+namespace DigitalNetNS {
+#if defined(IN_RCPP)
+    bool read_sobol_base(DataFrame df,
+                         uint32_t s, uint32_t m,  uint64_t base[])
+    {
+        uint32_t D = s + 1;
+        uint32_t L = m;
+        //uint32_t N = UINT32_C(1) << (m - 1);
+        uint32_t col = 0;
+        uint64_t V[L + 1];
+        for (unsigned i=1;i<=L;i++) {
+            V[i] = UINT64_C(1) << (64 - i); // all m's = 1
+        }
+#if defined(DEBUG)
+        cout << "col = " << dec << col << endl;
+        for (uint32_t i = 1; i <= L; i++) {
+            cout << "V[" << dec << i << "] = " << hex << V[i] << endl;
+        }
+#endif
+        for (uint32_t i = 1; i <= L; i++) {
+            base[(i - 1) * s + col] = V[i];
+        }
+        uint32_t data[max_data];
+        for (uint32_t c = 1; c < D - 1; c++) {
+            bool success = read_data(df, c - 1, data);
+            if (! success) {
+                cerr << "data format error" << endl;
+                //throw runtime_error("data format error");
+                return false;
+            }
+            col++;
+            //uint32_t d_sobol = data[0];
+            uint32_t s_sobol = data[0];
+            uint32_t a_sobol = data[1];
+            uint32_t *m_sobol = &data[1]; // index from 1
+#if defined(DEBUG)
+            //cout << "d = " << dec << d_sobol << endl;
+            cout << "s = " << dec << s_sobol << endl;
+            cout << "a = " << dec << a_sobol << endl;
+            cout << "L = " << dec << L << endl;
+#endif
+            if (L <= s_sobol) {
+                for (unsigned i=1;i<=L;i++) {
+                    V[i] = static_cast<uint64_t>(m_sobol[i]) << (64 - i);
+                }
+            } else {
+                for (unsigned i = 1; i <= s_sobol; i++) {
+                    V[i] = static_cast<uint64_t>(m_sobol[i]) << (64 - i);
+                }
+                for (unsigned i = s_sobol + 1; i <= L; i++) {
+                    V[i] = V[i - s_sobol] ^ (V[i - s_sobol] >> s_sobol);
+                    // s
+                    for (unsigned k=1; k <= s_sobol-1; k++) {
+                        V[i] ^= (((a_sobol >> (s_sobol-1-k)) & 1) * V[i-k]);
+                    }
+                }
+            }
+#if defined(DEBUG)
+            cout << "col = " << dec << col << endl;
+            for (uint32_t i = 1; i <= L; i++) {
+                cout << "V[" << dec << i << "] = " << hex << V[i] << endl;
+            }
+#endif
+            for (uint32_t i = 1; i <= L; i++) {
+                base[(i - 1) * s + col] = V[i];
+            }
+        }
+        for (uint32_t i = L - 1; i >= 1; i--) {
+            for (uint32_t j = 0; j < s; j++) {
+                base[i * s + j] ^= base[(i - 1) * s + j];
+            }
+        }
+        return true;
+    }
+#else
+    bool select_sobol_base(const std::string& path,
+                           uint32_t s, uint32_t m,  uint64_t base[])
+    {
+        // db open
+        sqlite3 *db;
+        int r = 0;
+        DEBUG_STEP(1);
+        r = sqlite3_open_v2(path.c_str(), &db, SQLITE_OPEN_READONLY, NULL);
+        if (r != SQLITE_OK) {
+            cout << "sqlite3_open error code = " << dec << r << endl;
+            cout << sqlite3_errmsg(db) << endl;
+            return false;
+        }
+        DEBUG_STEP(2);
+        sqlite3_stmt *select_sql = NULL;
+        //r = select_bind(db, &select_sql);
+        string strsql = "select d, s, a, mi from sobolbase ";
+        strsql += "order by d;";
+        r = sqlite3_prepare_v2(db, strsql.c_str(), -1, &select_sql, NULL);
+        if (r != SQLITE_OK) {
+            cout << "sqlite3_prepare error code = " << dec << r << endl;
+            cout << sqlite3_errmsg(db) << endl;
+            r = sqlite3_close_v2(db);
+            return false;
+        }
+        if (select_sql == NULL) {
+            cout << "sqlite3_prepare null statement" << endl;
+            r = sqlite3_close_v2(db);
+            return false;
+        }
+
+        uint32_t D = s + 1;
+        uint32_t L = m;
+        //uint32_t N = UINT32_C(1) << (m - 1);
+        uint32_t col = 0;
+        uint64_t V[L + 1];
+        for (unsigned i=1;i<=L;i++) {
+            V[i] = UINT64_C(1) << (64 - i); // all m's = 1
+        }
+#if defined(DEBUG)
+        cout << "col = " << dec << col << endl;
+        for (uint32_t i = 1; i <= L; i++) {
+            cout << "V[" << dec << i << "] = " << hex << V[i] << endl;
+        }
+#endif
+        for (uint32_t i = 1; i <= L; i++) {
+            base[(i - 1) * s + col] = V[i];
+        }
+        uint32_t data[max_data];
+        for (uint32_t c = 1; c < D - 1; c++) {
+            bool success = read_data(select_sql, data);
+            if (! success) {
+                cerr << "data format error" << endl;
+                //throw runtime_error("data format error");
+                return false;
+            }
+            col++;
+            //uint32_t d_sobol = data[0];
+            uint32_t s_sobol = data[0];
+            uint32_t a_sobol = data[1];
+            uint32_t *m_sobol = &data[1]; // index from 1
+#if defined(DEBUG)
+            //cout << "d = " << dec << d_sobol << endl;
+            cout << "s = " << dec << s_sobol << endl;
+            cout << "a = " << dec << a_sobol << endl;
+            cout << "L = " << dec << L << endl;
+#endif
+            if (L <= s_sobol) {
+                for (unsigned i=1;i<=L;i++) {
+                    V[i] = static_cast<uint64_t>(m_sobol[i]) << (64 - i);
+                }
+            } else {
+                for (unsigned i = 1; i <= s_sobol; i++) {
+                    V[i] = static_cast<uint64_t>(m_sobol[i]) << (64 - i);
+                }
+                for (unsigned i = s_sobol + 1; i <= L; i++) {
+                    V[i] = V[i - s_sobol] ^ (V[i - s_sobol] >> s_sobol);
+                    // s
+                    for (unsigned k=1; k <= s_sobol-1; k++) {
+                        V[i] ^= (((a_sobol >> (s_sobol-1-k)) & 1) * V[i-k]);
+                    }
+                }
+            }
+#if defined(DEBUG)
+            cout << "col = " << dec << col << endl;
+            for (uint32_t i = 1; i <= L; i++) {
+                cout << "V[" << dec << i << "] = " << hex << V[i] << endl;
+            }
+#endif
+            for (uint32_t i = 1; i <= L; i++) {
+                base[(i - 1) * s + col] = V[i];
+            }
+        }
+        r = sqlite3_finalize(select_sql);
+        if (r != SQLITE_OK) {
+            cout << "error finalize r = " << dec << r << endl;
+            cout << sqlite3_errmsg(db) << endl;
+        }
+        sqlite3_close_v2(db);
+        if (r != SQLITE_OK) {
+            return false;
+        }
+        for (uint32_t i = L - 1; i >= 1; i--) {
+            for (uint32_t j = 0; j < s; j++) {
+                base[i * s + j] ^= base[(i - 1) * s + j];
+            }
+        }
+        return true;
+    }
+#endif // IN_RCPP
+
+    bool get_sobol_base(std::istream& is,
                         uint32_t s, uint32_t m,  uint64_t base[])
     {
         uint32_t D = s + 1;
@@ -98,28 +301,19 @@ namespace MCQMCIntegration {
         for (uint32_t i = 1; i <= L; i++) {
             base[(i - 1) * s + col] = V[i];
         }
-        //uint32_t data[max_data];
+        uint32_t data[max_data];
         for (uint32_t c = 1; c < D - 1; c++) {
-#if 0
             bool success = read_data(is, data);
             if (! success) {
                 cerr << "data format error" << endl;
                 //throw runtime_error("data format error");
                 return false;
             }
-#endif
-            //uint32_t d_sobol = data[0];
-            //uint32_t s_sobol = data[1];
-            //uint32_t a_sobol = data[2];
-            //uint32_t *m_sobol = &data[2]; // index from 1
-            uint32_t s_sobol = sobolMatrix(col, 0);
-            uint32_t a_sobol = sobolMatrix(col, 1);
-            uint32_t m_sobol[s_sobol + 1];
-            m_sobol[0] = 0;
-            for (uint32_t i = 1; i <= s_sobol; i++) {
-                m_sobol[i] = sobolMatrix(col, i + 1);
-            }
             col++;
+            //uint32_t d_sobol = data[0];
+            uint32_t s_sobol = data[1];
+            uint32_t a_sobol = data[2];
+            uint32_t *m_sobol = &data[2]; // index from 1
 #if defined(DEBUG)
             //cout << "d = " << dec << d_sobol << endl;
             cout << "s = " << dec << s_sobol << endl;
@@ -157,5 +351,121 @@ namespace MCQMCIntegration {
             }
         }
         return true;
+    }
+
+    int get_sobol_s_max(const std::string& path)
+    {
+        // db open
+        sqlite3 *db;
+        int r = 0;
+        r = sqlite3_open_v2(path.c_str(), &db, SQLITE_OPEN_READONLY, NULL);
+        if (r != SQLITE_OK) {
+            cout << "sqlite3_open error code = " << dec << r << endl;
+            cout << sqlite3_errmsg(db) << endl;
+            return -1;
+        }
+        sqlite3_stmt *select_sql = NULL;
+        //r = select_bind(db, &select_sql);
+        string strsql = "select max(d) from sobolbase;";
+        stringstream ssbase;
+        r = sqlite3_prepare_v2(db, strsql.c_str(), -1, &select_sql, NULL);
+        if (r != SQLITE_OK) {
+            cout << "sqlite3_prepare error code = " << dec << r << endl;
+            cout << sqlite3_errmsg(db) << endl;
+            r = sqlite3_close_v2(db);
+            return -2;
+        }
+        if (select_sql == NULL) {
+            cout << "sqlite3_prepare null statement" << endl;
+            r = sqlite3_close_v2(db);
+            return -3;
+        }
+        r = sqlite3_step(select_sql);
+        if (r != SQLITE_ROW) {
+            cout << "not found" << endl;
+            r = sqlite3_close_v2(db);
+            return -4;
+        }
+        int s_max = sqlite3_column_int(select_sql, 0);
+        r = sqlite3_finalize(select_sql);
+        if (r != SQLITE_OK) {
+            cout << "error finalize r = " << dec << r << endl;
+            cout << sqlite3_errmsg(db) << endl;
+        }
+        sqlite3_close_v2(db);
+        return s_max;
+    }
+
+    int get_sobol_s_min(const std::string&)
+    {
+        return 2;
+    }
+
+    int get_sobol_m_max(const std::string&, int)
+    {
+        // 2^32 は、ぎりぎり無理のはず
+        return 31;
+    }
+
+    int get_sobol_m_min(const std::string&, int)
+    {
+        return 8;
+    }
+
+}
+
+namespace {
+#if defined(IN_RCPP)
+    bool read_data(DataFrame df, int count, uint32_t data[])
+    {
+        NumericVector vs = df["s"];
+        NumericVector va = df["a"];
+        StringVector vmi = df["mi"];
+        if (count >= vs.length()) {
+            return false;
+        }
+        data[0] = vs[count];
+        data[1] = va[count];
+        string tmp = vmi[count];
+        stringstream ss;
+        ss << tmp;
+        for (int i = 2; ss.good(); i++) {
+            ss >> data[i];
+        }
+        return true;
+    }
+#else
+    bool read_data(sqlite3_stmt* select_sql, uint32_t data[])
+    {
+        DEBUG_STEP(4.37);
+        int r = sqlite3_step(select_sql);
+        if (r != SQLITE_ROW) {
+            return false;
+        }
+        //sobolbase.d = sqlite3_column_int(select_sql, 0); // d
+        data[0] = sqlite3_column_int(select_sql, 1); // s
+        data[1] = sqlite3_column_int(select_sql, 2); // a
+        char * tmp = (char *)sqlite3_column_text(select_sql, 3); // mi
+        stringstream ss;
+        ss << tmp;
+        for (int i = 2; ss.good(); i++) {
+            ss >> data[i];
+        }
+        return true;
+    }
+#endif
+
+    bool read_data(istream& is, uint32_t data[])
+    {
+        is.read(reinterpret_cast<char *>(data), sizeof(uint32_t) * 3);
+        if (!is) {
+            return false;
+        }
+        is.read(reinterpret_cast<char *>(&data[3]), sizeof(uint32_t) * data[1]);
+        if (!is) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

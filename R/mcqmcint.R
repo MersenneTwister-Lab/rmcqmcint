@@ -6,7 +6,7 @@
 ##'@name rmcqmcint-package
 ##'@aliases rmcqmcint-package rmcqmcint
 ##'@docType package
-##'@import Rcpp
+##'@import Rcpp, RSQLite
 ##'@useDynLib rmcqmcint
 NULL
 
@@ -17,8 +17,84 @@ NULL
 ##'
 ##' DigitalNetID:
 ##' \itemize{
-##' \item{1:}{Niederreiter-Xing low WAFOM up to dimension 10}
-##' \item{2:}{Sobol low WAFOM up to dimentison 10}
+##' \item{1:}{Niederreiter-Xing low WAFOM}
+##' \item{2:}{Sobol low WAFOM}
+##' \item{3:}{Sobol Point Set up to dimension 21201}
+##' }
+##'
+##' integrand should receive numeric vector of length s and
+##' should return numeric value.
+##'
+##'@param digitalNetID 1:Niederreiter-Xing low WAFOM, 2:Sobol low wafom,
+##'3:Sobol large dimension.
+##'@return supportd minimal and maximal dimension number for specified digitalNet.
+##'@export
+digitalnet.dimMinMax <- function(digitalNetID) {
+  if (digitalNetID == 1) {
+    netname <- "nxlw"
+  } else if (digitalNetID == 2) {
+    netname <- "solw"
+  } else if (digitalNetID == 3) {
+    return c(2, 21201)
+  } else {
+    stop("invalid digitalNetID")
+  }
+    fmt <- "select min(dimr) as min, max(dimr) as max from digitalnet where netname='%s';"
+    sql <- sprintf(fmt, netname)
+    drv<-dbDriver("SQLite")
+    con<-dbConnect(drv,dbname=system.file("extdata",
+    "digitalnet.sqlite3", package="rmcqmcint"))
+    a<-dbGetQuery(con, sql)
+    c(a[1,1], a[1,2])
+}
+
+##' Quasi Monte-Carlo Integration with Low WAFOM Digital Net
+##'
+##' Compute Quasi Monte-Carlo Integration with Low WAFOM Digital Net,
+##' Niederreiter-Xing and Sobol.
+##'
+##' DigitalNetID:
+##' \itemize{
+##' \item{1:}{Niederreiter-Xing low WAFOM}
+##' \item{2:}{Sobol low WAFOM}
+##' \item{3:}{Sobol Point Set up to dimension 21201}
+##' }
+##'
+##' integrand should receive numeric vector of length s and
+##' should return numeric value.
+##'
+##'@param digitalNetID 1:Niederreiter-Xing low WAFOM, 2:Sobol low wafom,
+##'3:Sobol large dimension.
+##'@return supportd minimal and maximal dimension number for specified digitalNet.
+##'@export
+digitalnet.dimF2MinMax <- function(digitalNetID, dimR) {
+  if (digitalNetID == 1) {
+    netname <- "nxlw"
+  } else if (digitalNetID == 2) {
+    netname <- "solw"
+  } else if (digitalNetID == 3) {
+    return c(10, 31)
+  } else {
+    stop("invalid digitalNetID")
+  }
+  fmt <- "select min(dimf2) as min, max(dimf2) as max from digitalnet where netname='%s' and dimr = %d;"
+  sql <- sprintf(fmt, netname, dimR)
+  drv<-dbDriver("SQLite")
+  con<-dbConnect(drv,dbname=system.file("extdata",
+                                        "digitalnet.sqlite3", package="rmcqmcint"))
+  a<-dbGetQuery(con, sql)
+  c(a[1,1], a[1,2])
+}
+
+##' Quasi Monte-Carlo Integration with Low WAFOM Digital Net
+##'
+##' Compute Quasi Monte-Carlo Integration with Low WAFOM Digital Net,
+##' Niederreiter-Xing and Sobol.
+##'
+##' DigitalNetID:
+##' \itemize{
+##' \item{1:}{Niederreiter-Xing low WAFOM}
+##' \item{2:}{Sobol low WAFOM}
 ##' \item{3:}{Sobol Point Set up to dimension 21201}
 ##' }
 ##'
