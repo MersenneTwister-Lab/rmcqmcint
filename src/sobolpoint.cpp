@@ -62,6 +62,7 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <cstdio>
 #include <cerrno>
 #include <cstring>
@@ -72,6 +73,8 @@
 #include <sqlite3.h>
 #endif
 #include "sobolpoint.h"
+
+// [[Rcpp::plugins(cpp11)]]
 
 //#define DEBUG 1
 using namespace std;
@@ -91,8 +94,8 @@ namespace {
     bool read_data(Rcpp::DataFrame df, int count, uint32_t data[]);
 #else
     bool read_data(sqlite3_stmt* select_sql, uint32_t data[]);
-#endif
     bool read_data(istream& is, uint32_t data[]);
+#endif
 }
 
 namespace DigitalNetNS {
@@ -121,7 +124,7 @@ namespace DigitalNetNS {
         for (uint32_t c = 1; c < D - 1; c++) {
             bool success = read_data(df, c - 1, data);
             if (! success) {
-                cerr << "data format error" << endl;
+                warning("data format error");
                 //throw runtime_error("data format error");
                 return false;
             }
@@ -169,7 +172,7 @@ namespace DigitalNetNS {
         }
         return true;
     }
-#else
+#else // not IN_RCPP
     bool select_sobol_base(const std::string& path,
                            uint32_t s, uint32_t m,  uint64_t base[])
     {
@@ -279,7 +282,6 @@ namespace DigitalNetNS {
         }
         return true;
     }
-#endif // IN_RCPP
 
     bool get_sobol_base(std::istream& is,
                         uint32_t s, uint32_t m,  uint64_t base[])
@@ -411,6 +413,7 @@ namespace DigitalNetNS {
     {
         return 8;
     }
+#endif // IN_RCPP
 
 }
 
@@ -426,15 +429,15 @@ namespace {
         }
         data[0] = vs[count];
         data[1] = va[count];
-        string tmp = vmi[count];
+        //string tmp = vmi[count];
         stringstream ss;
-        ss << tmp;
+        ss << vmi[count];
         for (int i = 2; ss.good(); i++) {
             ss >> data[i];
         }
         return true;
     }
-#else
+#else // not IN_RCPP
     bool read_data(sqlite3_stmt* select_sql, uint32_t data[])
     {
         DEBUG_STEP(4.37);
@@ -453,7 +456,6 @@ namespace {
         }
         return true;
     }
-#endif
 
     bool read_data(istream& is, uint32_t data[])
     {
@@ -468,4 +470,5 @@ namespace {
             return true;
         }
     }
+#endif // IN_RCPP
 }

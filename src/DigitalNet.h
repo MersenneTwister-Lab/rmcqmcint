@@ -29,6 +29,10 @@
 #include <string>
 #include <cerrno>
 #include <cmath>
+#if defined(IN_RCPP)
+#include <Rcpp.h>
+#endif
+// [[Rcpp::plugins(cpp11)]]
 
 namespace DigitalNetNS {
 
@@ -44,6 +48,16 @@ namespace DigitalNetNS {
     uint32_t getParameterSize();
     const std::string getDigitalNetName(uint32_t index);
     const std::string getDigitalNetConstruction(uint32_t index);
+#if defined(IN_RCPP)
+    int readDigitalNetData(Rcpp::DataFrame df, digital_net_id id,
+                           uint32_t s, uint32_t m,
+                           uint64_t base[],
+                           int * tvalue, double * wafom);
+    int readDigitalNetData(Rcpp::DataFrame df, digital_net_id id,
+                           uint32_t s, uint32_t m,
+                           uint32_t base[],
+                           int * tvalue, double * wafom);
+#else // not IN_RCPP
     int readDigitalNetData(digital_net_id id, uint32_t s, uint32_t m,
                            uint64_t base[],
                            int * tvalue, double * wafom);
@@ -64,7 +78,7 @@ namespace DigitalNetNS {
     int getSMin(digital_net_id id);
     int getMMax(digital_net_id id, int s);
     int getMMin(digital_net_id id, int s);
-
+#endif // IN_RCPP
     template<typename U>
     class DigitalNet {
     private:
@@ -110,6 +124,27 @@ namespace DigitalNetNS {
             digitalShift = false;
         }
 
+#if defined(IN_RCPP)
+        DigitalNet(Rcpp::DataFrame df, digital_net_id& id,
+                   uint32_t s, uint32_t m) {
+            using namespace std;
+            this->s = s;
+            this->m = m;
+            this->id = static_cast<int>(id);
+            base = new U[s * m]();
+            int r = readDigitalNetData(df, id, s, m, base,
+                                       &tvalue, &wafom);
+            if (r != 0) {
+                //throw runtime_error("data type mismatch!");
+                throw "data type mismatch!";
+            }
+            shift = NULL;
+            point_base = NULL;
+            point = NULL;
+            count = 0;
+            digitalShift = false;
+        }
+#else
         DigitalNet(const digital_net_id& id, uint32_t s, uint32_t m) {
             using namespace std;
             this->s = s;
@@ -128,6 +163,7 @@ namespace DigitalNetNS {
             count = 0;
             digitalShift = false;
         }
+#endif // IN_RCPP
 
         ~DigitalNet() {
             if (base != NULL) {
@@ -251,6 +287,15 @@ namespace DigitalNetNS {
             using namespace std;
             cout << "in pointInitialize" << endl;
 #endif
+            if (sizeof(U) * 8 == 64) {
+                get_max = 64 - 53;
+                factor = exp2(-53);
+                eps = exp2(-64);
+            } else {
+                get_max = 0;
+                factor = exp2(-32);
+                eps = exp2(-33);
+            }
             if (shift == NULL) {
                 shift = new U[s]();
             }
@@ -275,7 +320,7 @@ namespace DigitalNetNS {
             gray.clear();
             count = 0;
             count++;
-            //nextPoint();
+            convertPoint();
 #if defined(DEBUG)
             cout << "out pointInitialize" << endl;
 #endif
@@ -290,18 +335,6 @@ namespace DigitalNetNS {
                 pointInitialize();
                 //return;
             }
-            int get_max;
-            double factor;
-            double eps;
-            if (sizeof(U) * 8 == 64) {
-                get_max = 64 - 53;
-                factor = exp2(-53);
-                eps = exp2(-64);
-            } else {
-                get_max = 0;
-                factor = exp2(-32);
-                eps = exp2(-33);
-            }
             int bit = gray.index();
 #if defined(DEBUG)
             cout << "bit = " << bit << endl;
@@ -313,10 +346,8 @@ namespace DigitalNetNS {
 #endif
             for (uint32_t i = 0; i < s; ++i) {
                 point_base[i] ^= getBase(bit, i);
-                // shift して1を立てている
-                uint64_t tmp = (point_base[i] ^ shift[i]) >> get_max;
-                point[i] = static_cast<double>(tmp) * factor + eps;
             }
+            convertPoint();
             if (count == (UINT64_C(1) << m)) {
                 count = 0;
                 gray.clear();
@@ -351,6 +382,13 @@ namespace DigitalNetNS {
         int getIndex(int i, int j) const {
             return i * s + j;
         }
+        void convertPoint() {
+            for (uint32_t i = 0; i < s; i++) {
+                // shift して1を立てている
+                uint64_t tmp = (point_base[i] ^ shift[i]) >> get_max;
+                point[i] = static_cast<double>(tmp) * factor + eps;
+            }
+        }
         int id;
         uint32_t s;
         uint32_t m;
@@ -358,6 +396,9 @@ namespace DigitalNetNS {
         double wafom;
         int tvalue;
         bool digitalShift;
+        int get_max;
+        double factor;
+        double eps;
         GrayIndex gray;
         MersenneTwister64 mt;
         U * base;

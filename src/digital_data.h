@@ -19,6 +19,8 @@
  */
 #include <inttypes.h>
 
+// [[Rcpp::plugins(cpp11)]]
+
 namespace MCQMCIntegration {
 
     struct dndata {

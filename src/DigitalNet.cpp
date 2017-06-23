@@ -17,9 +17,8 @@
  * COPYING
  */
 #include "config.h"
-#include "digital.h"
 #include "bit_operator.h"
-#include "DigitalNet.hpp"
+#include "DigitalNet.h"
 #include "sobolpoint.h"
 #include <iostream>
 #include <iomanip>
@@ -31,7 +30,14 @@
 #include <cstring>
 #include <cstdio>
 #include <cerrno>
+
+#if !defined(IN_RCPP)
+#include "digital.h"
 #include <sqlite3.h>
+#else
+using namespace Rcpp;
+#endif
+// [[Rcpp::plugins(cpp11)]]
 
 using namespace std;
 
@@ -59,6 +65,20 @@ namespace {
 
     const uint32_t digital_net_name_data_size = 5;
 
+#if defined(IN_RCPP)
+    stringstream errs;
+    void msgout(stringstream& ss)
+    {
+        string s;
+        ss >> s;
+        warning(s);
+    }
+#else
+    ostream& errs = cerr;
+    void msgout(ostream&)
+    {
+    }
+
     const char * getDataPath()
     {
         return getenv(digital_net_path.c_str());
@@ -84,13 +104,14 @@ namespace {
         path += ext;
         return path;
     }
-
+#endif // IN_RCPP
     template<typename U>
     int readSobolBase(const string& path, uint32_t s, uint32_t m, U base[])
     {
         ifstream ifs(path, ios::in | ios::binary);
         if (!ifs) {
-            cerr << "can't open:" << path << endl;
+            errs << "can't open:" << path << endl;
+            msgout(errs);
             return -1;
         }
         uint64_t data[s * m];
@@ -111,6 +132,28 @@ namespace {
         return 0;
     }
 
+#if defined(IN_RCPP)
+    template<typename U>
+    int readSobolBase(DataFrame df, uint32_t s, uint32_t m, U base[])
+    {
+        uint64_t data[s * m];
+        bool r = read_sobol_base(df, s, m, data);
+        if (!r) {
+            return -1;
+        }
+        if (sizeof(U) * 8  == 32) {
+            for (size_t i = 0; i < s * m; i++) {
+                base[i] = static_cast<U>((data[i] >> 32)
+                                         & UINT32_C(0xffffffff));
+            }
+        } else {
+            for (size_t i = 0; i < s * m; i++) {
+                base[i] = data[i];
+            }
+        }
+        return 0;
+    }
+#else
     template<typename U>
     int selectSobolBase(const string& path, uint32_t s, uint32_t m, U base[])
     {
@@ -133,7 +176,7 @@ namespace {
         }
         return 0;
     }
-
+#endif // IN_RCPP
     template<typename U>
     int read_digital_net_data(std::istream& is, int n,
                               uint32_t s, uint32_t m,
@@ -147,10 +190,11 @@ namespace {
         for (i = 0; i < m; i++) {
             for (j = 0; j < s; j++) {
                 if (!is) {
-                    cerr << "too less data i = " << dec << i
+                    errs << "too less data i = " << dec << i
                          << " j = " << j
                          << " s = " << s << " m = " << m
                          << endl;
+                    msgout(errs);
                     return -1;
                 }
                 is >> tmp;
@@ -158,9 +202,10 @@ namespace {
             }
         }
         if (i * s + j < s * m) {
-            cerr << "too less data i = " << dec << i
+            errs << "too less data i = " << dec << i
                  << " s = " << s << " m = " << m
                  << endl;
+            msgout(errs);
             return -1;
         }
         if (is) {
@@ -186,6 +231,50 @@ namespace {
         return 0;
     }
 
+#if defined(IN_RCPP)
+    template<typename U>
+    int read_digital_net_data(DataFrame df, digital_net_id id,
+                              uint32_t s, uint32_t m,
+                              U base[],
+                              int * tvalue, double * wafom) {
+        if (id == SOBOL) {
+            return readSobolBase(df, s, m, base);
+        }
+        //int bit = sizeof(U) * 8;
+        //int r = 0;
+        NumericVector wafom_v = df["wafom"];
+        if (wafom_v.length() < 1) {
+            *wafom = NAN;
+        } else {
+            *wafom = wafom_v[0];
+        }
+        NumericVector tvalue_v = df["tvalue"];
+        if (tvalue_v.length() < 1) {
+            *tvalue = -1;
+        } else {
+            *tvalue = tvalue_v[0];
+        }
+        StringVector data = df["data"];
+        if (data.length() < 1) {
+            stop("not found");
+            return -1;
+        }
+        stringstream ssbase;
+        ssbase << data[0];
+        for (size_t i = 0; i < s * m; i++) {
+            ssbase >> base[i];
+        }
+#if defined(DEBUG)
+        cout << "out select_digital_net_data" << endl;
+        cout << "base:" << endl;
+        for (size_t i = 0; i < s; i++) {
+            cout << base[i] << " ";
+        }
+        cout << endl;
+#endif
+        return 0;
+    }
+#else // not IN_RCPP
     template<typename U>
     int read_digital_net_data(digital_net_id id, uint32_t s, uint32_t m,
                               U base[],
@@ -654,11 +743,12 @@ namespace {
         sqlite3_close_v2(db);
         return m_min;
     }
-
+#endif // IN_RCPP
 }
 
 
 namespace DigitalNetNS {
+#if !defined(IN_RCPP)
     int getSMax(digital_net_id id)
     {
         string path = makePath("digitalnet", ".sqlite3");
@@ -698,7 +788,7 @@ namespace DigitalNetNS {
             return get_m_min(path, id, s);
         }
     }
-
+#endif
     const string getDigitalNetName(uint32_t index)
     {
         if (index < digital_net_name_data_size) {
@@ -762,6 +852,23 @@ namespace DigitalNetNS {
  * @param m m value
  * @exception runtime_error, when can't read data from is.
  */
+#if defined(IN_RCPP)
+    int readDigitalNetData(DataFrame df, digital_net_id id,
+                           uint32_t s, uint32_t m,
+                           uint64_t base[],
+                           int * tvalue, double * wafom)
+    {
+        return read_digital_net_data(df, id, s, m, base, tvalue, wafom);
+    }
+
+    int readDigitalNetData(DataFrame df, digital_net_id id,
+                           uint32_t s, uint32_t m,
+                           uint32_t base[],
+                           int * tvalue, double * wafom)
+    {
+        return read_digital_net_data(df, id, s, m, base, tvalue, wafom);
+    }
+#else // not IN_RCPP
     int readDigitalNetData(digital_net_id id, uint32_t s, uint32_t m,
                            uint64_t base[],
                            int * tvalue, double * wafom)
@@ -777,4 +884,5 @@ namespace DigitalNetNS {
         //return read_digital_net_data(id, s, m, base, tvalue, wafom);
         return select_digital_net_data(id, s, m, base, tvalue, wafom);
     }
+#endif // IN_RCPP
 }

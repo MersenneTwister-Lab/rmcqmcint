@@ -8,6 +8,8 @@
 #include <Rcpp.h>
 #endif
 
+// [[Rcpp::plugins(cpp11)]]
+
 namespace DigitalNetNS {
     bool get_sobol_base(std::istream& is,
                         uint32_t s, uint32_t m,  uint64_t base[]);

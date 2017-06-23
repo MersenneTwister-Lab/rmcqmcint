@@ -19,8 +19,8 @@ Author: Frances Kuo [aut],
 Maintainer: Mutsuo Saito <saito@manieth.com>
 Description: Monte-Carlo Quasi Monte-Carlo Integration.
 License: GPL (>= 3)
-Imports: Rcpp (>= 0.12.9)
-LinkingTo: Rcpp, RSQLite
+Imports: Rcpp (>= 0.12.9), RSQLite (>= 2.0)
+LinkingTo: Rcpp
 Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1

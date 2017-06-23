@@ -34,6 +34,8 @@
 #include <inttypes.h>
 #include <string>
 
+// [[Rcpp::plugins(cpp11)]]
+
 /**
  *\japanese
  * 64 bit Mersenne Twister 疑似乱数生成器

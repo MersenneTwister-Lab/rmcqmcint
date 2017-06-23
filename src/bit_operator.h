@@ -24,6 +24,10 @@
  */
 #include "config.h"
 #include <inttypes.h>
+
+// [[Rcpp::plugins(cpp11)]]
+
+
 /**
  * Counts number of 1s.
  *

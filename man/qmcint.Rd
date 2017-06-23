@@ -30,8 +30,8 @@ Niederreiter-Xing and Sobol.
 \details{
 DigitalNetID:
 \itemize{
-\item{1:}{Niederreiter-Xing low WAFOM up to dimension 10}
-\item{2:}{Sobol low WAFOM up to dimentison 10}
+\item{1:}{Niederreiter-Xing low WAFOM}
+\item{2:}{Sobol low WAFOM}
 \item{3:}{Sobol Point Set up to dimension 21201}
 }
 

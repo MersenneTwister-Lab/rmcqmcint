@@ -4,9 +4,11 @@
 #include "DigitalNet.h"
 #include "sobolpoint.h"
 
+// [[Rcpp::plugins(cpp11)]]
+
 using namespace std;
 using namespace Rcpp;
-using namespace MCQMCIntegration;
+using namespace DigitalNetNS;
 
 //#define DEBUG 1
 
@@ -47,6 +49,7 @@ namespace {
 // [[Rcpp::export(rng = false)]]
 List rcppQMCIntegration(Function integrand,
                         uint32_t N,
+                        DataFrame df,
                         int id,
                         int s,
                         int m,
@@ -59,7 +62,7 @@ List rcppQMCIntegration(Function integrand,
     cout << "m:" << dec << m << endl;
     cout << "probability:" << probability << endl;
 #endif
-    DigitalNetID digitalNetId;
+    digital_net_id digitalNetId;
     if (id == 1) {
         digitalNetId = NXLW;
     } else if (id == 2) {
@@ -67,7 +70,7 @@ List rcppQMCIntegration(Function integrand,
     } else { // id == 3
         digitalNetId = SOBOL;
     }
-    DigitalNet<uint64_t> digitalNet(digitalNetId, s, m);
+    DigitalNet<uint64_t> digitalNet(df, digitalNetId, s, m);
     digitalNet.pointInitialize();
     OnlineVariance eachintval;
     uint32_t cnt = 0;
@@ -91,56 +94,8 @@ List rcppQMCIntegration(Function integrand,
             digitalNet.nextPoint();
         }
         eachintval.addData(intsum.getMean());
-        cnt++;
-    } while ( cnt < N );
-    List data = List::create(Named("mean")=eachintval.getMean(),
-                             Named("absError")=eachintval.absErr(p));
-    return data;
-}
-
-// [[Rcpp::export(rng = false)]]
-List rcppQMCIntegrationSobol(Function integrand,
-                             uint32_t N,
-                             NumericMatrix sobolMatrix,
-                             int s,
-                             int m,
-                             double probability)
-{
-#if defined(DEBUG)
-    cout << "N:" << dec << N << endl;
-    cout << "s:" << dec << s << endl;
-    cout << "m:" << dec << m << endl;
-    cout << "probability:" << probability << endl;
-#endif
-    uint64_t base[s * m];
-    bool success = get_sobol_base(sobolMatrix, s, m, base);
-    if (!success) {
-            Rcpp::stop("can't find sobol point(s,m)");
-    }
-    DigitalNet<uint64_t> digitalNet(base, s, m);
-    digitalNet.pointInitialize();
-    OnlineVariance eachintval;
-    uint32_t cnt = 0;
-    int p = probToInt(probability);
-    NumericVector nv(s);
-    do {
-        checkUserInterrupt();
-        OnlineVariance intsum;
-        uint64_t max = 1;
-        max = max << m;
-        for (uint64_t j = 0; j < max; ++j) {
-            for (uint32_t k = 0; k < s; ++k) {
-                nv[k] = digitalNet.getPoint(k);
-            }
-            double d = as<double>(integrand(nv));
-#if defined(DEBUG)
-            //cout << "o:" << o << endl;
-            cout << "d:" << d << endl;
-#endif
-            intsum.addData(d);
-            digitalNet.nextPoint();
-        }
-        eachintval.addData(intsum.getMean());
+        digitalNet.setDigitalShift(true);
+        digitalNet.pointInitialize();
         cnt++;
     } while ( cnt < N );
     List data = List::create(Named("mean")=eachintval.getMean(),

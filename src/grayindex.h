@@ -19,6 +19,8 @@
 #include "bit_operator.h"
 #include <stdint.h>
 
+// [[Rcpp::plugins(cpp11)]]
+
 class GrayIndex {
 public:
     GrayIndex() {

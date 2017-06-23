@@ -1,0 +1,42 @@
+---
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rmcqmcint Monte-Carlo and Quasi Monte-Carlo Integration}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8](inputenc)
+---
+
+Digital Net
+-----------
+
+Generate Digital Net Point Set.
+
+There are two pre-defined Digital Net Low discrepancy point sets,
+Niederreiter-Xing point set and Sobol point set.
+Both of them are selected to have low WAFOM.
+
+DigitalNetID:
+\itemize{
+\item{1:}{Niederreiter-Xing low WAFOM}
+\item{2:}{Sobol low WAFOM}
+\item{3:}{Sobol Point Set up to dimension 21201}
+}
+
+Get avairable dimension number of Digital Net.
+```{r}
+library(rmcqmcint)
+digitalnet.dimMinMax(1)
+```
+
+Get avairable F2 dimension number of Digital Net.
+```{r}
+digitalnet.dimF2MinMax(1, 10)
+```
+
+And get points. Each row of returned matrix contains an s-dimensional point.
+```{r}
+s <- 4
+m <- 10
+c <- 2^m
+mat <- digitalnet.points(1, dimR=s, dimF2=m, count=c)
+```
