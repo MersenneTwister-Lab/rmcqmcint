@@ -36,3 +36,14 @@ test_that("test digitalnet points", {
   expect_true(all(matrix < 1))
   expect_true(all(matrix > 0))
 })
+
+test_that("test digitalnet points", {
+  s <- 4
+  m <- 11
+  n <- 2^m
+  matrix <- digitalnet.points(1, s, m, n, digitalShift=TRUE)
+  expect_equal(nrow(matrix), n)
+  expect_equal(ncol(matrix), s)
+  expect_true(all(matrix < 1))
+  expect_true(all(matrix > 0))
+})

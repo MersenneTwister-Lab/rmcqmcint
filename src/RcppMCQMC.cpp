@@ -82,7 +82,7 @@ List rcppQMCIntegration(Function integrand,
         uint64_t max = 1;
         max = max << m;
         for (uint64_t j = 0; j < max; ++j) {
-            for (uint32_t k = 0; k < s; ++k) {
+            for (int k = 0; k < s; ++k) {
                 nv[k] = digitalNet.getPoint(k);
             }
             double d = as<double>(integrand(nv));
@@ -129,7 +129,7 @@ List rcppMCIntegration(Function integrand,
         uint64_t max = 1;
         max = max << m;
         for (uint64_t j = 0; j < max; ++j) {
-            for (uint32_t k = 0; k < s; ++k) {
+            for (int k = 0; k < s; ++k) {
                 nv[k] = dist(rand);
             }
             double d = as<double>(integrand(nv));

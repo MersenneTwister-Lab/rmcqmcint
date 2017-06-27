@@ -101,6 +101,7 @@ namespace DigitalNetNS {
          * @param is input stream, from where digital net data are read.
          * @exception runtime_error, when can't read data from is.
          */
+#if !defined(IN_RCPP)
         DigitalNet(std::istream& is) {
             //using namespace std;
             int n;
@@ -122,8 +123,9 @@ namespace DigitalNetNS {
             point = NULL;
             count = 0;
             digitalShift = false;
+            shiftVector = false;
         }
-
+#endif
 #if defined(IN_RCPP)
         DigitalNet(Rcpp::DataFrame df, digital_net_id& id,
                    uint32_t s, uint32_t m) {
@@ -143,6 +145,7 @@ namespace DigitalNetNS {
             point = NULL;
             count = 0;
             digitalShift = false;
+            shiftVector = false;
         }
 #else
         DigitalNet(const digital_net_id& id, uint32_t s, uint32_t m) {
@@ -162,6 +165,7 @@ namespace DigitalNetNS {
             point = NULL;
             count = 0;
             digitalShift = false;
+            shiftVector = false;
         }
 #endif // IN_RCPP
 
@@ -203,6 +207,16 @@ namespace DigitalNetNS {
 
         void setDigitalShift(bool value) {
             digitalShift = value;
+        }
+
+        void setDigitalShift(U value[]) {
+            shiftVector = true;
+            if (shift == NULL) {
+                shift = new U[s];
+            }
+            for (size_t i = 0; i < s; i++) {
+                shift[i] = value[i];
+            }
         }
 
         const double * getPoint() const {
@@ -308,13 +322,15 @@ namespace DigitalNetNS {
             for (uint32_t i = 0; i < s; ++i) {
                 point_base[i] = 0;
             }
-            if (digitalShift) {
-                for (uint32_t i = 0; i < s; ++i) {
-                    shift[i] = mt();
-                }
-            } else {
-                for (uint32_t i = 0; i < s; ++i) {
-                    shift[i] = 0;
+            if (!shiftVector) {
+                if (digitalShift) {
+                    for (uint32_t i = 0; i < s; ++i) {
+                        shift[i] = mt();
+                    }
+                } else {
+                    for (uint32_t i = 0; i < s; ++i) {
+                        shift[i] = 0;
+                    }
                 }
             }
             gray.clear();
@@ -396,6 +412,7 @@ namespace DigitalNetNS {
         double wafom;
         int tvalue;
         bool digitalShift;
+        bool shiftVector;
         int get_max;
         double factor;
         double eps;

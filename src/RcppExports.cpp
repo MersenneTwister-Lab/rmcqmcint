@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // rcppDigitalNetPoints
-NumericMatrix rcppDigitalNetPoints(DataFrame df, int id, int dimR, int dimF2, uint64_t count, bool digitalShift);
-RcppExport SEXP rmcqmcint_rcppDigitalNetPoints(SEXP dfSEXP, SEXP idSEXP, SEXP dimRSEXP, SEXP dimF2SEXP, SEXP countSEXP, SEXP digitalShiftSEXP) {
+NumericMatrix rcppDigitalNetPoints(DataFrame df, int id, int dimR, int dimF2, uint64_t count, NumericVector shiftVector);
+RcppExport SEXP rmcqmcint_rcppDigitalNetPoints(SEXP dfSEXP, SEXP idSEXP, SEXP dimRSEXP, SEXP dimF2SEXP, SEXP countSEXP, SEXP shiftVectorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< DataFrame >::type df(dfSEXP);
@@ -15,8 +15,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type dimR(dimRSEXP);
     Rcpp::traits::input_parameter< int >::type dimF2(dimF2SEXP);
     Rcpp::traits::input_parameter< uint64_t >::type count(countSEXP);
-    Rcpp::traits::input_parameter< bool >::type digitalShift(digitalShiftSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcppDigitalNetPoints(df, id, dimR, dimF2, count, digitalShift));
+    Rcpp::traits::input_parameter< NumericVector >::type shiftVector(shiftVectorSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcppDigitalNetPoints(df, id, dimR, dimF2, count, shiftVector));
     return rcpp_result_gen;
 END_RCPP
 }

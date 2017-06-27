@@ -6,12 +6,13 @@
 ##'@name rmcqmcint-package
 ##'@aliases rmcqmcint-package rmcqmcint
 ##'@docType package
-##'@import Rcpp 
+##'@import Rcpp
 ##'@import RSQLite
+##'@importFrom stats runif
 ##'@useDynLib rmcqmcint
 NULL
 
-##' get minimum and maximum dimension number of DigitalNet 
+##' get minimum and maximum dimension number of DigitalNet
 ##'
 ##' DigitalNetID:
 ##' \itemize{
@@ -34,7 +35,7 @@ digitalnet.dimMinMax <- function(digitalNetID) {
   } else {
     stop("invalid digitalNetID")
   }
-  
+
   fmt <-
     "select min(dimr) as min, max(dimr) as max from digitalnet where netname='%s';"
   sql <- sprintf(fmt, netname)
@@ -47,7 +48,7 @@ digitalnet.dimMinMax <- function(digitalNetID) {
   c(a[1, 1], a[1, 2])
 }
 
-##' get minimum and maximum F2 dimension number of DigitalNet 
+##' get minimum and maximum F2 dimension number of DigitalNet
 ##'
 ##' DigitalNetID:
 ##' \itemize{
@@ -142,7 +143,13 @@ digitalnet.points <- function(digitalNetID,
                                         package = "rmcqmcint"))
   df <- dbGetQuery(con, sql)
   dbDisconnect(con)
-  return(rcppDigitalNetPoints(df, digitalNetID, dimR, dimF2, count, digitalShift))
+  if (digitalShift) {
+    sv <- runif(2*dimR, min=-2^31, max=2^31-1)
+  } else {
+    sv <- numeric(1)
+  }
+#  print(sv)
+  return(rcppDigitalNetPoints(df, digitalNetID, dimR, dimF2, count, sv))
 }
 
 ##' Quasi Monte-Carlo Integration with Low WAFOM Digital Net
