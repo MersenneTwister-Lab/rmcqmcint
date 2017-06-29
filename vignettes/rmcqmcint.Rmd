@@ -71,29 +71,3 @@ rs$mean
 rs$absError
 8 / 15 * pi^2 / 32 # to compare true value.
 ```
-
-Define another example integrand function; Oscillatory function in Genz test
-functions.
-```{r}
-make.oscillatory <- function(a) {
-	oscillatory <- function(point) {
-		return(cos(sum(a * point)))
-	}
-	return(oscillatory)
-}
-```
-
-If sum(a) is pi, integration of this function in (0, 1)^s will become
-zero. ID=3 means to use Sobol sequence up to dimention 21201.
-```{r}
-n <- 100
-id <- 3
-s <- 1000
-m <- 10
-p <- 0.99
-a <- rep(pi / s, length=s)
-osc <- make.oscillatory(a)
-rs <- qmcint(osc, N=n, s=s, digitalNetID=id, m=m, probability=p)
-rs$mean
-rs$absError
-```

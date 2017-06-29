@@ -1,6 +1,8 @@
 # History files
 .Rhistory
 .Rapp.history
+.Rproj.user
+.Ruserdata
 
 # Session Data files
 .RData
@@ -10,6 +12,7 @@
 
 # RStudio files
 .Rproj.user/
+SobolSequence.Rproj
 
 # produced vignettes
 vignettes/*.html

@@ -19,7 +19,6 @@
 #include "config.h"
 #include "bit_operator.h"
 #include "DigitalNet.h"
-#include "sobolpoint.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -31,12 +30,17 @@
 #include <cstdio>
 #include <cerrno>
 
+#if defined(USE_SOBOL)
+#include "sobolpoint.h"
+#endif
+
 #if !defined(IN_RCPP)
 #include "digital.h"
 #include <sqlite3.h>
 #else
 using namespace Rcpp;
 #endif
+
 // [[Rcpp::plugins(cpp11)]]
 
 using namespace std;
@@ -78,7 +82,9 @@ namespace {
     void msgout(ostream&)
     {
     }
-
+#endif // IN_RCPP
+    
+#if defined(USE_FILE) || defined(USE_SQL)
     const char * getDataPath()
     {
         return getenv(digital_net_path.c_str());
@@ -104,7 +110,9 @@ namespace {
         path += ext;
         return path;
     }
-#endif // IN_RCPP
+#endif
+
+#if defined(USE_SOBOL)
     template<typename U>
     int readSobolBase(const string& path, uint32_t s, uint32_t m, U base[])
     {
@@ -177,6 +185,7 @@ namespace {
         return 0;
     }
 #endif // IN_RCPP
+#endif // USE_SOBOL
     template<typename U>
     int read_digital_net_data(std::istream& is, int n,
                               uint32_t s, uint32_t m,
@@ -237,9 +246,11 @@ namespace {
                               uint32_t s, uint32_t m,
                               U base[],
                               int * tvalue, double * wafom) {
+#if defined(USE_SOBOL)
         if (id == SOBOL) {
             return readSobolBase(df, s, m, base);
         }
+#endif
         //int bit = sizeof(U) * 8;
         //int r = 0;
         NumericVector wafom_v = df["wafom"];
@@ -284,9 +295,11 @@ namespace {
 #endif
         string name = digital_net_name_data[id].abb;
         string path = makePath(name, ".dat");
+#if defined(USE_SOBOL)
         if (id == SOBOL) {
             return readSobolBase(path, s, m, base);
         }
+#endif
 #if defined(DEBUG)
         cout << "fname = " << path << endl;
 #endif
@@ -387,9 +400,11 @@ namespace {
 #endif
         string name = digital_net_name_data[id].abb;
         string path = makePath("digitalnet", ".sqlite3");
+#if defined(USE_SOBOL)
         if (id == SOBOL) {
             return selectSobolBase(path, s, m, base);
         }
+#endif
 #if defined(DEBUG)
         cout << "dbname = " << path << endl;
 #endif
@@ -752,41 +767,45 @@ namespace DigitalNetNS {
     int getSMax(digital_net_id id)
     {
         string path = makePath("digitalnet", ".sqlite3");
+#if defined(USE_SOBOL)
         if (id == SOBOL) {
             return get_sobol_s_max(path);
-        } else {
-            return get_s_max(path, id);
         }
+#endif
+        return get_s_max(path, id);
     }
 
     int getSMin(digital_net_id id)
     {
         string path = makePath("digitalnet", ".sqlite3");
+#if defined(USE_SOBOL)
         if (id == SOBOL) {
             return get_sobol_s_min(path);
-        } else {
-            return get_s_min(path, id);
         }
+#endif
+        return get_s_min(path, id);
     }
 
     int getMMax(digital_net_id id, int s)
     {
         string path = makePath("digitalnet", ".sqlite3");
+#if defined(USE_SOBOL)
         if (id == SOBOL) {
             return get_sobol_m_max(path, s);
-        } else {
-            return get_m_max(path, id, s);
         }
+#endif
+        return get_m_max(path, id, s);
     }
 
     int getMMin(digital_net_id id, int s)
     {
         string path = makePath("digitalnet", ".sqlite3");
+#if defined(USE_SOBOL)
         if (id == SOBOL) {
             return get_sobol_m_min(path, s);
-        } else {
-            return get_m_min(path, id, s);
         }
+#endif
+        return get_m_min(path, id, s);
     }
 #endif
     const string getDigitalNetName(uint32_t index)

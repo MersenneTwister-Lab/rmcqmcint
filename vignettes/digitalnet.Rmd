@@ -19,7 +19,6 @@ DigitalNetID:
 \itemize{
 \item{1:}{Niederreiter-Xing low WAFOM}
 \item{2:}{Sobol low WAFOM}
-\item{3:}{Sobol Point Set up to dimension 21201}
 }
 
 Get avairable dimension number of Digital Net.

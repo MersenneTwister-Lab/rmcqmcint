@@ -1,6 +1,5 @@
 #include <Rcpp.h>
 #include "DigitalNet.h"
-#include "sobolpoint.h"
 
 // [[Rcpp::plugins(cpp11)]]
 
@@ -19,10 +18,8 @@ NumericMatrix rcppDigitalNetPoints(DataFrame df,
     digital_net_id digitalNetId;
     if (id == 1) {
         digitalNetId = NXLW;
-    } else if (id == 2) {
+    } else { // id = 2
         digitalNetId = SOLW;
-    } else { // id == 3
-        digitalNetId = SOBOL;
     }
     DigitalNet<uint64_t> digitalNet(df, digitalNetId, dimR, dimF2);
     if (shiftVector.length() == 2 * dimR) {

@@ -37,9 +37,9 @@
 namespace DigitalNetNS {
 
     enum digital_net_id {
-        NX = 0,
-        SOBOL = 1,
-        OLDSO = 2,
+        //NX = 0,
+        //SOBOL = 1,
+        //OLDSO = 2,
         NXLW = 3,
         SOLW = 4,
         RANDOM = -1
@@ -241,6 +241,7 @@ namespace DigitalNetNS {
             }
         }
 
+#if defined(USE_SCRAMBLE)
         // Random Linear Scramble
         // Base を変えてしまう => いいのかも。
         void scramble() {
@@ -295,7 +296,7 @@ namespace DigitalNetNS {
                 }
             }
         }
-
+#endif
         void pointInitialize() {
 #if defined(DEBUG)
             using namespace std;
