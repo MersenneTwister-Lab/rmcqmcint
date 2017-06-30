@@ -51,7 +51,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <body>
 <h2 id="モンテカルロ及び準モンテカルロ法による数値積分">モンテカルロ及び準モンテカルロ法による数値積分</h2>
 <p>このパッケージはモンテカルロ法による数値積分関数<strong>mcint</strong>および準モンテカルロ法 による数値積分関数<strong>qmcint</strong>を提供する。</p>
-<p>準モンテカルロ法で使用できる三種類の超一様分布列があらかじめ定義されている。 それはWAFOM値の低い Niederreiter-Xing 点集合とSobol 点集合, および高次元のSobol点集合である。</p>
+<p>準モンテカルロ法で使用できる三種類の超一様分布列があらかじめ定義されている。 それはWAFOM値の低い Niederreiter-Xing 点集合とSobol 点集合である。</p>
 <p>被積分関数は, ユーザーが定義する必要があるが, 数値のベクトルを引数として 受け取り, 数値を返す必要がある。 被積分関数に渡される点は <span class="math inline">(0, 1)<sup><em>s</em></sup></span> の範囲の数になる。</p>
 <p>まず, 被積分関数の例を挙げる。これは原点を中心とする半径1の単位n次元超球の体積を求める関数である。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rmcqmcint)
@@ -68,9 +68,9 @@ unit.nsphere &lt;-<span class="st"> </span><span class="cf">function</span>(poin
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">4</span>)</code></pre></div>
 <p>この結果は以下のようになる。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs<span class="op">$</span>mean
-## [1] 0.3100977
+## [1] 0.3088086
 rs<span class="op">$</span>absError
-## [1] 0.006666557
+## [1] 0.001195585
 <span class="dv">1</span> <span class="op">/</span><span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>pi<span class="op">^</span><span class="dv">2</span> <span class="op">/</span><span class="st"> </span><span class="dv">16</span> <span class="co"># to compare true value.</span>
 ## [1] 0.3084251</code></pre></div>
 <p>例2:</p>
@@ -78,9 +78,9 @@ rs<span class="op">$</span>absError
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">5</span>, <span class="dt">digitalNetID =</span> <span class="dv">2</span>)</code></pre></div>
 <p>この結果は以下のようになる。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs<span class="op">$</span>mean
-## [1] 0.164375
+## [1] 0.1654004
 rs<span class="op">$</span>absError
-## [1] 0.001514922
+## [1] 0.001557645
 <span class="dv">8</span> <span class="op">/</span><span class="st"> </span><span class="dv">15</span> <span class="op">*</span><span class="st"> </span>pi<span class="op">^</span><span class="dv">2</span> <span class="op">/</span><span class="st"> </span><span class="dv">32</span> <span class="co"># to compare true value.</span>
 ## [1] 0.1644934</code></pre></div>
 <p>例3:</p>
@@ -88,9 +88,9 @@ rs<span class="op">$</span>absError
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">4</span>)</code></pre></div>
 <p>この結果はおおむね以下のようになるだろう。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs<span class="op">$</span>mean
-## [1] 0.3100977
+## [1] 0.3088086
 rs<span class="op">$</span>absError
-## [1] 0.006666557
+## [1] 0.001195585
 <span class="dv">1</span> <span class="op">/</span><span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>pi<span class="op">^</span><span class="dv">2</span> <span class="op">/</span><span class="st"> </span><span class="dv">16</span> <span class="co"># to compare true value.</span>
 ## [1] 0.3084251</code></pre></div>
 <p>例4:</p>
@@ -98,31 +98,26 @@ rs<span class="op">$</span>absError
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(<span class="dt">integrand=</span>unit.nsphere, <span class="dt">N=</span><span class="dv">100</span>, <span class="dt">s=</span><span class="dv">5</span>)</code></pre></div>
 <p>この結果はおおむね以下のようになるだろう。</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs<span class="op">$</span>mean
-## [1] 0.1638379
+## [1] 0.1642773
 rs<span class="op">$</span>absError
-## [1] 0.002203611
+## [1] 0.001248333
 <span class="dv">8</span> <span class="op">/</span><span class="st"> </span><span class="dv">15</span> <span class="op">*</span><span class="st"> </span>pi<span class="op">^</span><span class="dv">2</span> <span class="op">/</span><span class="st"> </span><span class="dv">32</span> <span class="co"># to compare true value.</span>
 ## [1] 0.1644934</code></pre></div>
-<p>別の被積分関数の例を定義する。Genz 氏の超一様分布列テスト関数Oscillatoryであるが, 以下に定義するのはパラメータを与えてOscillator関数のクロージャを作る関数である。</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">make.oscillatory &lt;-<span class="st"> </span><span class="cf">function</span>(a) {
-    oscillatory &lt;-<span class="st"> </span><span class="cf">function</span>(point) {
-        <span class="kw">return</span>(<span class="kw">cos</span>(<span class="kw">sum</span>(a <span class="op">*</span><span class="st"> </span>point)))
-    }
-    <span class="kw">return</span>(oscillatory)
-}</code></pre></div>
-<p>ベクトルaの合計がπなら, この関数の<span class="math inline">(0, 1)<sup><em>s</em></sup></span>領域での積分値はゼロになるはずである。 以下で指定している ID=3 は21201次元まで指定できる Sobol 点集合を示している。</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="dv">100</span>
-id &lt;-<span class="st"> </span><span class="dv">3</span>
-s &lt;-<span class="st"> </span><span class="dv">1000</span>
-m &lt;-<span class="st"> </span><span class="dv">10</span>
-p &lt;-<span class="st"> </span><span class="fl">0.99</span>
-a &lt;-<span class="st"> </span><span class="kw">rep</span>(pi <span class="op">/</span><span class="st"> </span>s, <span class="dt">length=</span>s)
-osc &lt;-<span class="st"> </span><span class="kw">make.oscillatory</span>(a)
-rs &lt;-<span class="st"> </span><span class="kw">qmcint</span>(osc, <span class="dt">N=</span>n, <span class="dt">s=</span>s, <span class="dt">digitalNetID=</span>id, <span class="dt">m=</span>m, <span class="dt">probability=</span>p)</code></pre></div>
-<p>この結果は以下のようになる。</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rs<span class="op">$</span>mean
-## [1] 1.167836e-06
-rs<span class="op">$</span>absError
-## [1] 0.0002671781</code></pre></div>
+<p>超一様分布点集合を直接得ることもできる。 超一様分布列は次のどれかを指定する。</p>
+<ul>
+<li>1:Niederreiter-Xing low WAFOM</li>
+<li>2:Sobol low wafom</li>
+</ul>
+<p>使用可能な点集合の次元を取得する。</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">digitalnet.dimMinMax</span>(<span class="dt">digitalNetID=</span><span class="dv">1</span>)
+## [1]  4 32</code></pre></div>
+<p>上記範囲内の次元を指定して、使用可能なF2次元を取得する。F2次元がmなら<span class="math inline">2<sup><em>m</em></sup></span>の 点が利用できる。</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">digitalnet.dimF2MinMax</span>(<span class="dt">digitalNetID=</span><span class="dv">1</span>, <span class="dt">dimR=</span><span class="dv">10</span>)
+## [1] 10 18</code></pre></div>
+<p>点集合を取得する。返却値は１行ごとに一つの点を表すベクトルになっている。 返却する点集合は次元をsとすると<span class="math inline">(0, 1)<sup><em>s</em></sup></span>内の点である。最小の座標値は <span class="math inline">2<sup>−64</sup></span>であり、取り得る最大の座標値は<span class="math inline">1 − 2<sup>−53</sup></span>である。</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">digitalnet.points</span>(<span class="dt">digitalNetID=</span><span class="dv">1</span>, <span class="dt">dimR=</span><span class="dv">10</span>, <span class="dt">dimF2=</span><span class="dv">12</span>, <span class="dt">count=</span><span class="dv">2</span><span class="op">^</span><span class="dv">12</span>)</code></pre></div>
+<p>デジタルシフトを指定すると乱数を使用してデジタルシフトした点集合が得られる。</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">digitalnet.points</span>(<span class="dt">digitalNetID=</span><span class="dv">1</span>, <span class="dt">dimR=</span><span class="dv">10</span>, <span class="dt">dimF2=</span><span class="dv">12</span>, <span class="dt">count=</span><span class="dv">2</span><span class="op">^</span><span class="dv">12</span>,
+                  <span class="dt">digitalShift=</span><span class="ot">TRUE</span>)</code></pre></div>
 </body>
 </html>
